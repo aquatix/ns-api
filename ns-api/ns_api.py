@@ -40,12 +40,13 @@ def vertrektijden(station):
     disruptions = []
 
     disruptionlist = soup.find_all('ul', {'class': 'list-faqs'})
-    for row in disruptionlist[0].find_all('li'):
-        try:
-            if 'drawer-item' in row['class']:
-                disruptions.append({'route': row.strong.get_text(), 'info': row.p.get_text()})
-        except KeyError:
-            continue
+    if len(disruptionlist) > 1:
+        for row in disruptionlist[0].find_all('li'):
+            try:
+                if 'drawer-item' in row['class']:
+                    disruptions.append({'route': row.strong.get_text(), 'info': row.p.get_text()})
+            except KeyError:
+                continue
 
     times = []
     for row in soup.find_all('tr'):
