@@ -50,30 +50,23 @@ def vertrektijden(station):
     times = []
     for row in soup.find_all('tr'):
         counter = 0
-        time = ''
-        delay = 0
-        delay_unit = ''
-        destination = ''
-        platform = ''
-        route = ''
-        details = ''
+        time_tuple = {}
 
         for cell in row.find_all('td'):
             cell_content = cell.get_text().strip()
             if counter == 0:
-                time, delay, delay_unit = _parse_time_delay(cell_content)
+                time_tuple['time'], time_tuple['delay'], time_tuple['delay_unit'] = _parse_time_delay(cell_content)
             if counter == 1:
-                destination = cell_content
+                time_tuple['destination'] = cell_content
             if counter == 2:
-                platform = cell_content
+                time_tuple['platform'] = cell_content
             if counter == 3:
-                route = cell_content
+                time_tuple['route'] = cell_content
             if counter == 4:
-                details = cell_content
+                time_tuple['details'] = cell_content
             counter += 1
 
-        if time != '':
-            time_tuple = {'time': time, 'delay': delay, 'delay_unit': delay_unit, 'destination': destination, 'platform': platform, 'route': route, 'details': details}
+        if 'time' in time_tuple:
             times.append(time_tuple)
 
     return disruptions, times
@@ -173,10 +166,10 @@ def check_delays_at(station):
         if time['delay'] > 0:
             print time
 
-#print vertrektijden('Amsterdam Centraal')
+print vertrektijden('Amsterdam Centraal')
 #print check_delays_at('Amsterdam Centraal')
 #print werkzaamheden()
 #print route('heemskerk', 'hoofddorp', '', '30-12', '13:34')
-print route('amsterdam sloterdijk', 'Hoofddorp', '', '30-12', '15:39')
+#print route('amsterdam sloterdijk', 'Hoofddorp', '', '30-12', '15:39')
 #for routeparts in route('heemskerk', 'hoofddorp', '', '30-12', '13:34'):
 #    print u"departing from {0} at {1}".format(routeparts['departure_platform'], routeparts['departure'])
