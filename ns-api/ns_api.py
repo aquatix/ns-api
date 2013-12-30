@@ -37,6 +37,16 @@ def vertrektijden(station):
     response = urllib2.urlopen(req)
     page = response.read()
     soup = BeautifulSoup(page)
+    disruptions = []
+
+    disruptionlist = soup.find_all('ul', {'class': 'list-faqs'})
+    for row in disruptionlist[0].find_all('li'):
+        try:
+            if 'drawer-item' in row['class']:
+                disruptions.append({'route': row.strong.get_text(), 'info': row.p.get_text()})
+        except KeyError:
+            continue
+
     times = []
     for row in soup.find_all('tr'):
         counter = 0
@@ -66,7 +76,7 @@ def vertrektijden(station):
             time_tuple = {'time': time, 'delay': delay, 'delay_unit': delay_unit, 'destination': destination, 'platform': platform, 'route': route, 'details': details}
             times.append(time_tuple)
 
-    return times
+    return disruptions, times
 
 
 def werkzaamheden():
@@ -131,27 +141,20 @@ def route(depart_station, to_station, via, date, time):
                             route_parts[partcounter]['departure'] = _parse_da_time(cell.b.get_text().strip())
                         if rowcounter == 0 and counter == 1:
                             try:
-                                #print cell.b.font.get_text().strip()
-                                print "depdelay %s" % cell.b.font
-                                print cell.b('font')
-                                print "depdelay %s" % cell('font')
-                                print "depdelay %s" % cell.b.font.Contents()
-                                route_parts[partcounter]['departure_delay'] = cell.b.font
-                            except:
-                                pass
-                            route_parts[partcounter]['departure_platform'] = cell.b.get_text().strip()
+                                route_parts[partcounter]['departure_delay'] = cell.b.font.get_text().replace(u'\xa0', u' ')
+                            except KeyError:
+                                route_parts[partcounter]['departure_delay'] = None
+                            route_parts[partcounter]['departure_platform'] = cell.b.get_text().replace(u'\xa0', u' ').strip()
                         if rowcounter == 1 and counter == 0:
-                            route_parts[partcounter]['train'] = cell.get_text()
+                            route_parts[partcounter]['train'] = cell.get_text().replace(u'\xa0', u' ')
                         if rowcounter == 2 and counter == 0:
                             route_parts[partcounter]['arrival'] = _parse_da_time(cell.b.get_text().strip())
                         if rowcounter == 2 and counter == 1:
                             try:
-                                #print cell.b.font.get_text().strip()
-                                print "arrdelay %s" % cell.b.font
-                                route_parts[partcounter]['arrival_delay'] = cell.b.font
+                                route_parts[partcounter]['arrival_delay'] = cell.b.font.get_text().replace(u'\xa0', u' ')
                             except:
-                                pass
-                            route_parts[partcounter]['arrival_platform'] = cell.b.get_text().strip()
+                                route_parts[partcounter]['arrival_delay'] = None
+                            route_parts[partcounter]['arrival_platform'] = cell.b.get_text().replace(u'\xa0', u' ').strip()
                         counter += 1
                     rowcounter += 1
                     if rowcounter == 4:
@@ -165,15 +168,15 @@ def route(depart_station, to_station, via, date, time):
 
 
 def check_delays_at(station):
-    times = vertrektijden(station)
+    disrptions, times = vertrektijden(station)
     for time in times:
         if time['delay'] > 0:
             print time
 
-print vertrektijden('Amsterdam Centraal')
+#print vertrektijden('Amsterdam Centraal')
 #print check_delays_at('Amsterdam Centraal')
 #print werkzaamheden()
 #print route('heemskerk', 'hoofddorp', '', '30-12', '13:34')
-print route('amsterdam centraal', 'hoofddorp', '', '30-12', '14:34')
+print route('amsterdam sloterdijk', 'Hoofddorp', '', '30-12', '15:39')
 #for routeparts in route('heemskerk', 'hoofddorp', '', '30-12', '13:34'):
 #    print u"departing from {0} at {1}".format(routeparts['departure_platform'], routeparts['departure'])
