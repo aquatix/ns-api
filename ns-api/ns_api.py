@@ -136,7 +136,7 @@ def route(depart_station, to_station, via, date, time):
                             try:
                                 route_parts[partcounter]['departure_delay'] = cell.b.font.get_text().replace(u'\xa0', u' ')
                             except AttributeError:
-                                route_parts[partcounter]['departure_delay'] = None
+                                route_parts[partcounter]['departure_delay'] = 0
                             route_parts[partcounter]['departure_platform'] = cell.b.get_text().replace(u'\xa0', u' ').strip()
                         if rowcounter == 1 and counter == 0:
                             route_parts[partcounter]['train'] = cell.get_text().replace(u'\xa0', u' ')
@@ -146,7 +146,7 @@ def route(depart_station, to_station, via, date, time):
                             try:
                                 route_parts[partcounter]['arrival_delay'] = cell.b.font.get_text().replace(u'\xa0', u' ')
                             except AttributeError:
-                                route_parts[partcounter]['arrival_delay'] = None
+                                route_parts[partcounter]['arrival_delay'] = 0
                             route_parts[partcounter]['arrival_platform'] = cell.b.get_text().replace(u'\xa0', u' ').strip()
                         counter += 1
                     rowcounter += 1
