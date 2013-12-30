@@ -165,11 +165,3 @@ def check_delays_at(station):
     for time in times:
         if time['delay'] > 0:
             print time
-
-print vertrektijden('Amsterdam Centraal')
-#print check_delays_at('Amsterdam Centraal')
-#print werkzaamheden()
-#print route('heemskerk', 'hoofddorp', '', '30-12', '13:34')
-#print route('amsterdam sloterdijk', 'Hoofddorp', '', '30-12', '15:39')
-#for routeparts in route('heemskerk', 'hoofddorp', '', '30-12', '13:34'):
-#    print u"departing from {0} at {1}".format(routeparts['departure_platform'], routeparts['departure'])
