@@ -52,6 +52,6 @@ for route in routes:
         delays.append("{0}\nAankomstvertraging: {1} minuten op {2}".format(route_text, planned_route[0]['arrival_delay'], planned_route[0]['arrival_platform']))
 
 if len(delays) > 0:
-	# Send a note
-	p.pushNote(devices[5]["id"], 'NS Vertraging', "\n".join(delays))
+	# Send a note with all delays to device 5 of the list from PushBullet:
+	p.pushNote(devices[5]["id"], 'NS Vertraging', "\n\n".join(delays))
 ```
