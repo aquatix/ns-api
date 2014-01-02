@@ -41,7 +41,7 @@ for route in routes:
                 delays.append("{4}:\n{2} {3} heeft {0} minuten vertraging naar {1}".format(vertrek['delay'], vertrek['destination'], vertrek['details'], vertrek['route'], route['departure']))
             # 'Rijdt vandaag niet'
             if 'Rijdt' in vertrek['details'] and route['keyword'] in vertrek['route']:
-                delays.append("{4}:\n{2} naar {1}: {0}".format(vertrek['details'], vertrek['destination'], vertrek['route'], route['departure']))
+                delays.append("{3}:\n{2} naar {1}: {0}".format(vertrek['details'], vertrek['destination'], vertrek['route'], route['departure']))
 
     route_text = 'Route {0} - {1} van {2}'.format(route['departure'], route['destination'], route['time'])
 
