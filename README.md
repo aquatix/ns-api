@@ -3,7 +3,7 @@ ns-api
 
 Query the Dutch railways about your routes, getting info on delays and more.
 
-For example, I use it to push notifications about my route to my phone through [Pushbullet](http://pushbullet.com). Clone [pyPushBullet](https://github.com/Azelphur/pyPushBullet) and include the pushbullet.py in your project. Then do something like this:
+For example, I use it to push notifications about my route to my phone through [Pushbullet](http://pushbullet.com). Clone [pyPushBullet](https://github.com/Azelphur/pyPushBullet) and include the pushbullet.py in your project. Then do something like this, which I automated through a crontab entry to check around the times I want:
 
 ```python
 import ns_api
