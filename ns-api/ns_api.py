@@ -139,6 +139,9 @@ def route(depart_station, to_station, via, date, time):
                             except AttributeError:
                                 route_parts[partcounter]['departure_delay'] = 0
                             route_parts[partcounter]['departure_platform'] = cell.b.get_text().replace(u'\xa0', u' ').strip()
+                            if route_parts[partcounter]['departure_delay'] != 0 and route_parts[partcounter]['departure_delay'] != '':
+                                # Strip the delay text, like '+ 4 min' from the platform text
+                                route_parts[partcounter]['departure_platform'] = route_parts[partcounter]['departure_platform'][len(route_parts[partcounter]['departure_delay']):].strip()
                         if rowcounter == 1 and counter == 0:
                             route_parts[partcounter]['train'] = cell.get_text().replace(u'\xa0', u' ')
                         if rowcounter == 2 and counter == 0:
@@ -149,6 +152,9 @@ def route(depart_station, to_station, via, date, time):
                             except AttributeError:
                                 route_parts[partcounter]['arrival_delay'] = 0
                             route_parts[partcounter]['arrival_platform'] = cell.b.get_text().replace(u'\xa0', u' ').strip()
+                            if route_parts[partcounter]['arrival_delay'] != 0 and route_parts[partcounter]['arrival_delay'] != '':
+                                # Strip the delay text, like '+ 4 min' from the platform text
+                                route_parts[partcounter]['arrival_platform'] = route_parts[partcounter]['arrival_platform'][len(route_parts[partcounter]['arrival_delay']):].strip()
                         counter += 1
                     rowcounter += 1
                     if rowcounter == 4:
@@ -162,7 +168,7 @@ def route(depart_station, to_station, via, date, time):
 
 
 def check_delays_at(station):
-    disrptions, times = vertrektijden(station)
+    disruptions, times = vertrektijden(station)
     for time in times:
         if time['delay'] > 0:
             print time
