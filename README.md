@@ -1,7 +1,7 @@
 ns-api
 ======
 
-Query the Dutch railways about your routes, getting info on delays and more.
+Query the Dutch railways about your routes, getting info on delays and more. See below for the syntax.
 
 For example, I use it to push notifications about my route to my phone through [Pushbullet](http://pushbullet.com). Clone [pyPushBullet](https://github.com/Azelphur/pyPushBullet) and include the pushbullet.py in your project. Then do something like this, which I automated through a crontab entry to check around the times I want:
 
@@ -54,4 +54,76 @@ for route in routes:
 if len(delays) > 0:
 	# Send a note with all delays to device 5 of the list from PushBullet:
 	p.pushNote(devices[5]["id"], 'NS Vertraging', "\n\n".join(delays))
+```
+
+The call `vertrektijden` returns two lists containing dicts. The first list is the list with current disruptions and work (I think those are network-wide). Syntax:
+
+```python
+[
+	{'route': 'Amsterdam Centraal - Groningen', 'info': 'Stuk'},
+
+]
+```
+
+The second list is the info you explicitely requested:
+
+```python
+[
+    {
+        'delay_unit': '',
+        'route': u'LeidenC.',
+        'destination': u'Den Haag Centraal',
+        'delay': 0,
+        'platform': u'1',
+        'details': u'Sprinter',
+        'time': u'12:38'
+    },
+    {
+        'delay_unit': '',
+        'route': u'Schiphol, Duivendrecht, Weesp',
+        'destination': u'Hilversum',
+        'delay': 0,
+        'platform': u'4',
+        'details': u'Sprinter',
+        'time': u'12:52'
+    },
+    {
+        'delay_unit': '',
+        'route': u"Schiphol, A'dam Sloterdijk, Amsterdam C.",
+        'destination': u'Amersfoort Vathorst',
+        'delay': 0,
+        'platform': u'3',
+        'details': u'Sprinter',
+        'time': u'12:53'
+    },
+    {
+        'delay_unit': '',
+        'route': u"Schiphol, A'dam Sloterdijk, Zaandam",
+        'destination': u'Hoorn Kersenboogerd',
+        'delay': 0,
+        'platform': u'3',
+        'details': u'Sprinter',
+        'time': u'13:05'
+    },
+    {
+        'delay_unit': 'm',
+        'route': u'Schiphol, Duivendrecht, Weesp',
+        'destination': u'Almere Oostvaarders',
+        'delay': 6,
+        'platform': u'4',
+        'details': u'Sprinter',
+        'time': u'13:06'
+    },
+]
+
+```
+
+So, example:
+
+```python
+>>> ns_api.vertrektijden('Hoofddorp')
+([], [{'delay_unit': '', 'route': u'Leiden C.', 'destination': u'Den Haag Centraal', 'delay': 0, 'platform': u'1', 'details': u'Sprinter', 'time': u'12:38'}, {'delay_unit': '', 'route': u'Schiphol, Duivendrecht, Weesp', 'destination': u'Hilversum', 'delay': 0, 'platform': u'4', 'details': u'Sprinter', 'time': u'12:52'}, {'delay_unit': '', 'route': u"Schiphol, A'dam Sloterdijk, Amsterdam C.", 'destination': u'Amersfoort Vathorst', 'delay': 0, 'platform': u'3', 'details': u'Sprinter', 'time': u'12:53'}, {'delay_unit': '', 'route': u"Schiphol, A'dam Sloterdijk, Zaandam", 'destination': u'Hoorn Kersenboogerd', 'delay': 0, 'platform': u'3', 'details': u'Sprinter', 'time': u'13:05'}, {'delay_unit': '', 'route': u'Schiphol, Duivendrecht, Weesp', 'destination': u'Almere Oostvaarders', 'delay': 0, 'platform': u'4', 'details': u'Sprinter', 'time': u'13:06'}, {'delay_unit': '', 'route': u'Leiden C.', 'destination': u'Den Haag Centraal', 'delay': 0, 'platform': u'1', 'details': u'Sprinter', 'time': u'13:08'}, {'delay_unit': '', 'route': u'Schiphol, Duivendrecht, Weesp', 'destination': u'Hilversum', 'delay': 0, 'platform': u'4', 'details': u'Sprinter', 'time': u'13:22'}, {'delay_unit': '', 'route': u"Schiphol, A'dam Sloterdijk, Amsterdam C.", 'destination': u'Amersfoort Vathorst', 'delay': 0, 'platform': u'3', 'details': u'Sprinter', 'time': u'13:23'}, {'delay_unit': '', 'route': u"Schiphol, A'dam Sloterdijk, Zaandam", 'destination': u'Hoorn Kersenboogerd', 'delay': 0, 'platform': u'3', 'details': u'Sprinter', 'time': u'13:35'}, {'delay_unit': '', 'route': u'Schiphol, Duivendrecht, Weesp', 'destination': u'Almere Oostvaarders', 'delay': 0, 'platform': u'4', 'details': u'Sprinter', 'time': u'13:36'}, {'delay_unit': '', 'route': u'Leiden C.', 'destination': u'Den Haag Centraal', 'delay': 0, 'platform': u'1', 'details': u'Sprinter', 'time': u'13:38'}])
+
+>>> ns_api.route('hoofddorp', 'sloterdijk', '', '06-01', '13:00')
+[{'arrival': u'13:20', 'arrival_delay': 0, 'departure_platform': u'Hoofddorp  platform 3', 'departure': u'13:05', 'train': u'Sprinter NS direction Schiphol', 'departure_delay': 0, 'arrival_platform': u'Amsterdam Sloterdijk  platform 9'}]
 ```
