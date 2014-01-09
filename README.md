@@ -10,6 +10,9 @@ import ns_api
 import datetime
 from pushbullet import PushBullet
 
+def unique(my_list): 
+    return [x for x in my_list if x not in locals()['_[1]']]
+
 apiKey = "YOUR_KEY_HERE"
 p = PushBullet(apiKey)
 # Get a list of devices
@@ -18,6 +21,8 @@ devices = p.getDevices()
 delays = []
 
 today = datetime.datetime.now().strftime('%d-%m')
+today_date = datetime.datetime.now().strftime('%d-%m-%Y')
+current_time = datetime.datetime.now()
 
 # keyword is used to filter routes. It's generally part of the "Sprinter <city1>, <city2>, <city3> sentence.
 routes = [
@@ -27,6 +32,12 @@ routes = [
          ]
 
 for route in routes:
+    route_time = datetime.datetime.strptime(today_date + " " + route['time'], "%d-%m-%Y %H:%M")
+    delta = current_time - route_time
+    if current_time > route_time and delta.total_seconds() > 1800:
+        # the route was more than half an hour ago, lets skip it
+        continue
+
     route_delays, vertrekken = ns_api.vertrektijden(route['departure'])
     for vertrek in vertrekken:
         #print vertrek
@@ -51,6 +62,10 @@ for route in routes:
     if planned_route[0]['arrival_delay'] > 0:
         delays.append("{0}\nAankomstvertraging: {1} minuten op {2}".format(route_text, planned_route[0]['arrival_delay'], planned_route[0]['arrival_platform']))
 
+# deduplicate the list (useful when having multiple routes from the same origin):
+if len(delays) > 1:
+    delays = unique(delays)
+
 if len(delays) > 0:
 	# Send a note with all delays to device 5 of the list from PushBullet:
 	p.pushNote(devices[5]["id"], 'NS Vertraging', "\n\n".join(delays))
@@ -71,7 +86,7 @@ The second list is the info you explicitely requested:
 [
     {
         'delay_unit': '',
-        'route': u'LeidenC.',
+        'route': u'Leiden C.',
         'destination': u'Den Haag Centraal',
         'delay': 0,
         'platform': u'1',
@@ -118,7 +133,7 @@ The second list is the info you explicitely requested:
 
 ```
 
-So, example:
+So, for example:
 
 ```python
 >>> ns_api.vertrektijden('Hoofddorp')
