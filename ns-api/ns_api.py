@@ -139,7 +139,7 @@ def route(depart_station, to_station, via, date, time):
                             except AttributeError:
                                 route_parts[partcounter]['departure_delay'] = 0
                             route_parts[partcounter]['departure_platform'] = cell.b.get_text().replace(u'\xa0', u' ').strip()
-                            if route_parts[partcounter]['departure_delay'] != 0 and route_parts[partcounter]['departure_delay'] != '':
+                            if route_parts[partcounter]['departure_delay'] != 0 and route_parts[partcounter]['departure_delay'] != '' and len(route_parts[partcounter]['departure_delay']) > 2:
                                 # Strip the delay text, like '+ 4 min' from the platform text
                                 route_parts[partcounter]['departure_platform'] = route_parts[partcounter]['departure_platform'][len(route_parts[partcounter]['departure_delay']):].strip()
                         if rowcounter == 1 and counter == 0:
@@ -152,7 +152,7 @@ def route(depart_station, to_station, via, date, time):
                             except AttributeError:
                                 route_parts[partcounter]['arrival_delay'] = 0
                             route_parts[partcounter]['arrival_platform'] = cell.b.get_text().replace(u'\xa0', u' ').strip()
-                            if route_parts[partcounter]['arrival_delay'] != 0 and route_parts[partcounter]['arrival_delay'] != '':
+                            if route_parts[partcounter]['arrival_delay'] != 0 and route_parts[partcounter]['arrival_delay'] != '' and len(route_parts[partcounter]['arrival_delay']) > 2:
                                 # Strip the delay text, like '+ 4 min' from the platform text
                                 route_parts[partcounter]['arrival_platform'] = route_parts[partcounter]['arrival_platform'][len(route_parts[partcounter]['arrival_delay']):].strip()
                         counter += 1
