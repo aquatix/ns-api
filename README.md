@@ -78,6 +78,7 @@ if len(delays) > 0:
 Which is called through a crontab entry, for example:
 
 ```
+# Call every five minutes from 7 to 10 and then from 16 to 18 hours:
 */5  7-9  * * 1-5 cd /home/username/bin/crontab/notifications; /usr/bin/python ns_notifications_pushbullet.py
 */5 16-17 * * 1-5 cd /home/username/bin/crontab/notifications; /usr/bin/python ns_notifications_pushbullet.py
 ```
