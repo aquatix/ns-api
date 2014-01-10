@@ -11,7 +11,11 @@ import datetime
 from pushbullet import PushBullet
 
 def unique(my_list): 
-    return [x for x in my_list if x not in locals()['_[1]']]
+    result = []
+    for item in my_list:
+        if item not in result:
+            result.append(item)
+    return result
 
 apiKey = "YOUR_KEY_HERE"
 p = PushBullet(apiKey)
@@ -141,4 +145,7 @@ So, for example:
 
 >>> ns_api.route('hoofddorp', 'sloterdijk', '', '06-01', '13:00')
 [{'arrival': u'13:20', 'arrival_delay': 0, 'departure_platform': u'Hoofddorp  platform 3', 'departure': u'13:05', 'train': u'Sprinter NS direction Schiphol', 'departure_delay': 0, 'arrival_platform': u'Amsterdam Sloterdijk  platform 9'}]
+
+>>> ns_api.werkzaamheden()
+[{'info': u'in de nacht van vrijdag 10 op zaterdag 11 januari tot 07.00 uur', 'route': u'Den Helder-Schagen'}, {'info': u'zaterdag 11 januari tot 17.00 uur', 'route': u"Tilburg Universiteit/'s-Hertogenbosch-Eindhoven/Deurne"}, {'info': u'in de nacht van zaterdag 11 op zondag 12 januari vanaf 00.10 uur tot 09.30 uur', 'route': u'Amsterdam Centraal-Haarlem/Zaandam'}, {'info': u'in de nacht van zaterdag 11 op zondag 12 januari na 01.00 uur', 'route': u'Schagen-Den Helder'}, {'info': u'in de nacht van zaterdag 11 op zondag 12 januari vanaf 03.30 uur tot 05.30 uur', 'route': u'Breda-Tilburg'}, {'info': u'zondag 12 januari', 'route': u'Den Haag Centraal-Rotterdam Centraal'}, {'info': u'in de nacht van zondag 12 op maandag 13 januari vanaf 23.20 uur tot 04.00 uur', 'route': u'Sittard-Maastricht Randwyck'}, {'info': u'in de nacht van zondag 12 op maandag 13 januari na 00.15 uur', 'route': u'Utrecht Centraal-Geldermalsen'}, {'info': u'maandag 13 januari tot 05.50 uur', 'route': u'Utrecht Centraal-Geldermalsen'}, {'info': u'in de nacht van maandag 13 op dinsdag 14 januari vanaf 00.20 uur', 'route': u'Emmen-Zwolle'}, {'info': u'in de nacht van maandag 13 op dinsdag 14 januari tussen 00.20 uur en 00.50 uur', 'route': u'Utrecht Centraal-Geldermalsen'}, {'info': u'dinsdag 14 januari tot 06.00 uur', 'route': u'Utrecht Centraal-Geldermalsen'}, {'info': u'in de nacht van dinsdag 14 op woensdag 15 januari vanaf 23.45 uur', 'route': u'Delfzijl-Appingedam'}, {'info': u'in de nacht van donderdag 16 op vrijdag 17 januari vanaf 23.45 uur', 'route': u'Emmen-Zwolle'}, {'info': u'zaterdag 18 januari', 'route': u'Utrecht Centraal-Utrecht Maliebaan'}, {'info': u'zaterdag 18 en zondag 19 januari', 'route': u"'s-Hertogenbosch-Utrecht Centraal/Nijmegen/Boxtel"}, {'info': u'zondag 19 januari', 'route': u'Woerden-Utrecht Centraal'}, {'info': u'in de nacht van zondag 19 op maandag 20 januari na 00.15 uur', 'route': u'Utrecht Centraal-Geldermalsen'}, {'info': u'maandag 20 januari tot 05.50 uur', 'route': u'Utrecht Centraal-Geldermalsen'}]
 ```
