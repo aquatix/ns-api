@@ -75,6 +75,13 @@ if len(delays) > 0:
 	p.pushNote(devices[5]["id"], 'NS Vertraging', "\n\n".join(delays))
 ```
 
+Which is called through a crontab entry, for example:
+
+```
+*/5  7-9  * * 1-5 cd /home/username/bin/crontab/notifications; /usr/bin/python ns_notifications_pushbullet.py
+*/5 16-17 * * 1-5 cd /home/username/bin/crontab/notifications; /usr/bin/python ns_notifications_pushbullet.py
+```
+
 The call `vertrektijden` returns two lists containing dicts. The first list is the list with current disruptions and work (I think those are network-wide). Syntax:
 
 ```python
