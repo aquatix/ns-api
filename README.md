@@ -42,10 +42,10 @@ routes = [
 for route in routes:
     route_time = datetime.datetime.strptime(today_date + " " + route['time'], "%d-%m-%Y %H:%M")
     delta = current_time - route_time
-    if current_time > route_time and delta.total_seconds() > MAX_TIME_PAST
+    if current_time > route_time and abs(delta.total_seconds()) > MAX_TIME_PAST
         # the route was too long ago ago, lets skip it
         continue
-    if current_time < route_time and delta.total_seconds() > MAX_TIME_FUTURE
+    if current_time < route_time and abs(delta.total_seconds()) > MAX_TIME_FUTURE
         # the route is too much in the future, lets skip it
         continue
 
