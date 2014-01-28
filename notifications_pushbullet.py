@@ -1,5 +1,6 @@
-import ns_api
+import ns-api.ns_api
 import datetime
+import settings
 from pushbullet import PushBullet
 
 def unique(my_list): 
@@ -13,7 +14,7 @@ def unique(my_list):
 MAX_TIME_PAST = 1800
 MAX_TIME_FUTURE = 3600
 
-apiKey = "YOURKEYHERE"
+api_key = settings.pushbullet_key
 p = PushBullet(apiKey)
 # Get a list of devices
 devices = p.getDevices()
@@ -24,18 +25,7 @@ today = datetime.datetime.now().strftime('%d-%m')
 today_date = datetime.datetime.now().strftime('%d-%m-%Y')
 current_time = datetime.datetime.now()
 
-routes = [
-         {'departure': 'Heemskerk', 'destination': 'Hoofddorp', 'time': '7:40', 'keyword': 'Beverwijk' },
-         {'departure': 'Amsterdam Sloterdijk', 'destination': 'Hoofddorp', 'time': '8:19', 'keyword': None },
-         {'departure': 'Schiphol', 'destination': 'Hoofddorp', 'time': '8:45', 'keyword': None },
-         {'departure': 'Hoofddorp', 'destination': 'Heemskerk', 'time': '17:05', 'keyword': 'Hoorn' },
-         {'departure': 'Amsterdam Sloterdijk', 'destination': 'Heemskerk', 'time': '17:39', 'keyword': 'Haarlem' },
-         #{'departure': 'Amsterdam Sloterdijk', 'destination': 'Nijmegen', 'time': '21:40', 'keyword': None }, # test
-         #{'departure': 'Amsterdam Sloterdijk', 'destination': 'Schiphol', 'time': '22:19', 'keyword': None }, # test
-         #{'departure': 'Amsterdam Sloterdijk', 'destination': 'Amersfoort', 'time': '22:09', 'keyword': None }, # test
-         ]
-
-for route in routes:
+for route in settings.routes:
     route_time = datetime.datetime.strptime(today_date + " " + route['time'], "%d-%m-%Y %H:%M")
     delta = current_time - route_time
     if current_time > route_time and delta.total_seconds() > MAX_TIME_PAST:
