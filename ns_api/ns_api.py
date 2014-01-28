@@ -22,6 +22,7 @@ def _parse_da_time(time):
     """
     return time.split()[1]
 
+
 def vertrektijden(station):
     #url = 'http://www.ns.nl/actuele-vertrektijden/main.action?xml=false'
     url = 'http://www.ns.nl/actuele-vertrektijden/main.action?xml=true'

@@ -44,11 +44,11 @@ logger.debug(devices)
 mc = pylibmc.Client(['127.0.0.1'], binary=True, behaviors={'tcp_nodelay': True, 'ketama': True})
 
 should_run = True
-if 'run' in mc:
-    should_run = mc['run']
+if 'nsapi_run' in mc:
+    should_run = mc['nsapi_run']
 else:
     logger.info('no run tuple in memcache, creating')
-    mc['run'] = should_run
+    mc['nsapi_run'] = should_run
 
 logger.debug('should_run: %s' % should_run)
 
@@ -99,13 +99,13 @@ for route in settings.routes:
     if planned_route[0]['arrival_delay'] > 0:
         delays.append("{0}\nAankomstvertraging: {1} minuten op {2}".format(route_text, planned_route[0]['arrival_delay'], planned_route[0]['arrival_platform']))
 
-logger.debug(delays)
+logger.debug('all current delays: %s' % delays)
 
 # deduplicate the list (useful when having multiple routes from the same origin):
 if len(delays) > 1:
     delays = unique(delays)
 
-logger.debug(delays)
+logger.debug('current delays, deduped: %s' % delays)
 
 should_send = False
 
@@ -114,7 +114,7 @@ if 'delays' not in mc:
     logger.info('previous delays not found')
     should_send = True
 elif mc['delays'] != delays:
-    logger.info('new delays are different')
+    logger.info('new delays are different: %s vs %s' % [mc['delays'], delays])
     should_send = True
 
 if should_send == True:

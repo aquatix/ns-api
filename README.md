@@ -3,92 +3,26 @@ ns-api
 
 Query the Dutch railways about your routes, getting info on delays and more. See below for the syntax.
 
-For example, I use it to push notifications about my route to my phone through [Pushbullet](http://pushbullet.com). Clone [pyPushBullet](https://github.com/Azelphur/pyPushBullet) and include the pushbullet.py in your project. Then do something like this, which I automated through a crontab entry to check around the times I want:
+## Example application
 
-```python
-import ns_api
-import datetime
-from pushbullet import PushBullet
+For example, I use the library to push notifications about my route to my phone through [Pushbullet](http://pushbullet.com). Clone [pyPushBullet](https://github.com/Azelphur/pyPushBullet) and include the pushbullet.py in your project. The program I use to do this is included in the repository as `notifications_pushbullet.py`, which I automated through a crontab entry to check around the times I want. To run it, first install its dependencies if you didn't already have them:
 
-def unique(my_list): 
-    result = []
-    for item in my_list:
-        if item not in result:
-            result.append(item)
-    return result
+* On Debian-based distro's, install `memcached`, `python-pylibmc` and `python-bs4`, the latter (BeautifulSoup) is needed for `ns_api.py`.
+* With pip, install `pylibmc`, `BeautifulSoup4`. You need to have memcached running on your system.
 
-# Only plan routes that are at maximum half an hour in the past or an hour in the future
-MAX_TIME_PAST = 1800
-MAX_TIME_FUTURE = 3600
+Then copy `settings_example.py` to `settings.py` and modify the configuration to your needs. You might want to check which index your wanted device is on in the Pushbullet list (you can also go to your account on [Pushbullet.com](https://www.pushbullet.com/) and count in your device list, starting with 0 for the first).
 
-apiKey = "YOUR_KEY_HERE"
-p = PushBullet(apiKey)
-# Get a list of devices
-devices = p.getDevices()
-
-delays = []
-
-today = datetime.datetime.now().strftime('%d-%m')
-today_date = datetime.datetime.now().strftime('%d-%m-%Y')
-current_time = datetime.datetime.now()
-
-# keyword is used to filter routes. It's generally part of the "Sprinter <city1>, <city2>, <city3> sentence.
-routes = [
-         {'departure': 'Heemskerk', 'destination': 'Hoofddorp', 'time': '8:40', 'keyword': 'Beverwijk' },
-         {'departure': 'Hoofddorp', 'destination': 'Heemskerk', 'time': '17:05', 'keyword': 'Hoorn' },
-         {'departure': 'Amsterdam Sloterdijk', 'destination': 'Schiphol', 'time': '22:19', 'keyword': None }, # test
-         ]
-
-for route in routes:
-    route_time = datetime.datetime.strptime(today_date + " " + route['time'], "%d-%m-%Y %H:%M")
-    delta = current_time - route_time
-    if current_time > route_time and abs(delta.total_seconds()) > MAX_TIME_PAST:
-        # the route was too long ago ago, lets skip it
-        continue
-    if current_time < route_time and abs(delta.total_seconds()) > MAX_TIME_FUTURE:
-        # the route is too much in the future, lets skip it
-        continue
-
-    route_delays, vertrekken = ns_api.vertrektijden(route['departure'])
-    for vertrek in vertrekken:
-        #print vertrek
-        if route['keyword'] == None:
-            if vertrek['delay'] > 0  and route['destination'] in vertrek['route']:
-                delays.append("{4}:\n{2} {3} heeft {0} minuten vertraging naar {1}".format(vertrek['delay'], vertrek['destination'], vertrek['details'], vertrek['route'], route['departure']))
-            # 'Rijdt vandaag niet'
-            if 'Rijdt' in vertrek['details'] and route['destination'] in vertrek['route']:
-                delays.append("{4}:\n{2} naar {1}: {0}".format(vertrek['details'], vertrek['destination'], vertrek['route'], route['departure']))
-        else:
-            if vertrek['delay'] > 0  and route['keyword'] in vertrek['route']:
-                delays.append("{4}:\n{2} {3} heeft {0} minuten vertraging naar {1}".format(vertrek['delay'], vertrek['destination'], vertrek['details'], vertrek['route'], route['departure']))
-            # 'Rijdt vandaag niet'
-            if 'Rijdt' in vertrek['details'] and route['keyword'] in vertrek['route']:
-                delays.append("{3}:\n{2} naar {1}: {0}".format(vertrek['details'], vertrek['destination'], vertrek['route'], route['departure']))
-
-    route_text = 'Route {0} - {1} van {2}'.format(route['departure'], route['destination'], route['time'])
-
-    planned_route = ns_api.route(route['departure'], route['destination'], '', today, route['time'])
-    if planned_route[0]['departure_delay'] > 0:
-        delays.append("{0}\nVertrekvertraging: {1} minuten op {2}".format(route_text, planned_route[0]['departure_delay'], planned_route[0]['departure_platform']))
-    if planned_route[0]['arrival_delay'] > 0:
-        delays.append("{0}\nAankomstvertraging: {1} minuten op {2}".format(route_text, planned_route[0]['arrival_delay'], planned_route[0]['arrival_platform']))
-
-# deduplicate the list (useful when having multiple routes from the same origin):
-if len(delays) > 1:
-    delays = unique(delays)
-
-if len(delays) > 0:
-	# Send a note with all delays to device 5 of the list from PushBullet:
-	p.pushNote(devices[5]["id"], 'NS Vertraging', "\n\n".join(delays))
-```
-
-Which is called through a crontab entry, for example:
+`notifications_pushbullet.py` is best called through a crontab entry, for example:
 
 ```
 # Call every five minutes from 7 to 10 and then from 16 to 18 hours:
-*/5  7-9  * * 1-5 cd /home/username/bin/crontab/notifications; /usr/bin/python ns_notifications_pushbullet.py
-*/5 16-17 * * 1-5 cd /home/username/bin/crontab/notifications; /usr/bin/python ns_notifications_pushbullet.py
+*/5  7-9  * * 1-5 cd /home/username/bin/crontab/ns_api; /usr/bin/python notifications_pushbullet.py
+*/5 16-17 * * 1-5 cd /home/username/bin/crontab/ns_api; /usr/bin/python notifications_pushbullet.py
 ```
+
+It can be disabled by setting the `nsapi_run` tuple in memcache to `False`.
+
+## `ns_api.py` methods
 
 The call `vertrektijden` returns two lists containing dicts. The first list is the list with current disruptions and work (I think those are network-wide). Syntax:
 
