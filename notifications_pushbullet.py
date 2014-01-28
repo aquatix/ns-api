@@ -1,7 +1,7 @@
 import sys
 import datetime
 import logging
-import ns_api.ns_api
+from ns_api import ns_api
 import settings
 from pushbullet import PushBullet
 import pylibmc
