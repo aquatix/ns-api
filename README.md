@@ -1,7 +1,7 @@
 ns_api
 ======
 
-Query the Dutch railways about your routes, getting info on delays and more. See below for the syntax.
+Query the Dutch railways about your routes, getting info on delays and more. See below for the syntax and example output.
 
 ## Example application
 
