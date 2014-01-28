@@ -1,6 +1,9 @@
 # Example configuration. Copy to settings.py and modify to your needs
 
+# Pushbullet API key. See their website
 pushbullet_key = "YOURKEYHERE"
+# Device to push to. See p.getDevices() for the List of which to choose
+device_index = 0
 
 routes = [
          {'departure': 'Heemskerk', 'destination': 'Hoofddorp', 'time': '7:40', 'keyword': 'Beverwijk' },
