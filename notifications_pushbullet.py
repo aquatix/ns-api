@@ -114,7 +114,7 @@ if 'nsapi_delays' not in mc:
     logger.info('previous delays not found')
     should_send = True
 elif mc['nsapi_delays'] != delays:
-    logger.info('new delays are different: %s vs %s' % [mc['delays'], delays])
+    logger.info('new delays are different: %s vs %s' % mc['delays'], delays)
     should_send = True
 
 if should_send == True:
