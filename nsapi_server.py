@@ -52,5 +52,5 @@ def enable_notifier():
 
 if __name__ == '__main__':
     # Run on public interface (!) on non-80 port
-    app.debug = True
+    #app.debug = True
     app.run(host='0.0.0.0', port=8086)
