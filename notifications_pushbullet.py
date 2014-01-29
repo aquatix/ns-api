@@ -114,7 +114,7 @@ if 'nsapi_delays' not in mc:
     logger.info('previous delays not found')
     should_send = True
 elif mc['nsapi_delays'] != delays:
-    logger.info('new delays are different: %s vs %s' % mc['delays'], delays)
+    logger.info('new delays are different: %s vs %s' % (mc['delays'], delays))
     should_send = True
 
 if should_send == True:
@@ -123,5 +123,5 @@ if should_send == True:
 
     if len(delays) > 0:
         # Send a note with all delays to device 5 of the list from PushBullet:
-        logger.info('sending delays to device %s with index %s' % [devices[settings.device_index]["extras"]["nickname"], settings.device_index])
+        logger.info('sending delays to device %s with index %s' % (devices[settings.device_index]["extras"]["model"], settings.device_index))
         p.pushNote(devices[settings.device_index]["id"], 'NS Vertraging', "\n\n".join(delays))
