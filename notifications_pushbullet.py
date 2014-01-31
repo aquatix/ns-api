@@ -99,6 +99,10 @@ for route in settings.routes:
     if planned_route[0]['arrival_delay'] > 0:
         delays.append("{0}\nAankomstvertraging: {1} minuten op {2}".format(route_text, planned_route[0]['arrival_delay'], planned_route[0]['arrival_platform']))
 
+    if 'arrival_platform_mutation' in planned_route[0]:
+        # the platform is changed
+        delays.append('{0}\nKomt op ander perron aan, namelijk {1}'.format(route_text, planned_route[0]['arrival_platform']))
+
 logger.debug('all current delays: %s' % delays)
 
 # deduplicate the list (useful when having multiple routes from the same origin):

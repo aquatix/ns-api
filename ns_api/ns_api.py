@@ -148,11 +148,20 @@ def route(depart_station, to_station, via, date, time):
                         if rowcounter == 2 and counter == 0:
                             route_parts[partcounter]['arrival'] = _parse_da_time(cell.b.get_text().strip())
                         if rowcounter == 2 and counter == 1:
+                            arrival_mutation = ''
                             try:
-                                route_parts[partcounter]['arrival_delay'] = cell.b.font.get_text().replace(u'\xa0', u' ')
+                                #route_parts[partcounter]['arrival_delay'] = cell.b.font.get_text().replace(u'\xa0', u' ')
+                                arrival_mutation = cell.b.font.get_text().replace(u'\xa0', u' ')
                             except AttributeError:
-                                route_parts[partcounter]['arrival_delay'] = 0
+                                #route_parts[partcounter]['arrival_delay'] = 0
+                                arrival_mutation = '0'
                             route_parts[partcounter]['arrival_platform'] = cell.b.get_text().replace(u'\xa0', u' ').strip()
+                            route_parts[partcounter]['arrival_delay'] = 0
+                            if 'min' in arrival_mutation:
+                                route_parts[partcounter]['arrival_delay'] = arrival_mutation
+                            elif arrival_mutation != '0':
+                                # platform is different from the planned one
+                                route_parts[partcounter]['arrival_platform_mutation'] = True
                             if route_parts[partcounter]['arrival_delay'] != 0 and route_parts[partcounter]['arrival_delay'] != '' and len(route_parts[partcounter]['arrival_delay']) > 2:
                                 # Strip the delay text, like '+ 4 min' from the platform text
                                 route_parts[partcounter]['arrival_platform'] = route_parts[partcounter]['arrival_platform'][len(route_parts[partcounter]['arrival_delay']):].strip()
