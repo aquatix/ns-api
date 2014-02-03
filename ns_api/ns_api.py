@@ -135,11 +135,18 @@ def route(depart_station, to_station, via, date, time):
                         if rowcounter == 0 and counter == 0:
                             route_parts[partcounter]['departure'] = _parse_da_time(cell.b.get_text().strip())
                         if rowcounter == 0 and counter == 1:
+                            departure_mutation = ''
                             try:
-                                route_parts[partcounter]['departure_delay'] = cell.b.font.get_text().replace(u'\xa0', u' ')
+                                departure_mutation = cell.b.font.get_text().replace(u'\xa0', u' ')
                             except AttributeError:
-                                route_parts[partcounter]['departure_delay'] = 0
+                                departure_mutation = '0'
                             route_parts[partcounter]['departure_platform'] = cell.b.get_text().replace(u'\xa0', u' ').strip()
+                            route_parts[partcounter]['departure_delay'] = 0
+                            if 'min' in departure_mutation:
+                                route_parts[partcounter]['departure_delay'] = departure_mutation
+                            elif departure_mutation != '0':
+                                # platform is different from the planned one
+                                route_parts[partcounter]['departure_platform_mutation'] = True
                             if route_parts[partcounter]['departure_delay'] != 0 and route_parts[partcounter]['departure_delay'] != '' and len(route_parts[partcounter]['departure_delay']) > 2:
                                 # Strip the delay text, like '+ 4 min' from the platform text
                                 route_parts[partcounter]['departure_platform'] = route_parts[partcounter]['departure_platform'][len(route_parts[partcounter]['departure_delay']):].strip()
@@ -150,10 +157,8 @@ def route(depart_station, to_station, via, date, time):
                         if rowcounter == 2 and counter == 1:
                             arrival_mutation = ''
                             try:
-                                #route_parts[partcounter]['arrival_delay'] = cell.b.font.get_text().replace(u'\xa0', u' ')
                                 arrival_mutation = cell.b.font.get_text().replace(u'\xa0', u' ')
                             except AttributeError:
-                                #route_parts[partcounter]['arrival_delay'] = 0
                                 arrival_mutation = '0'
                             route_parts[partcounter]['arrival_platform'] = cell.b.get_text().replace(u'\xa0', u' ').strip()
                             route_parts[partcounter]['arrival_delay'] = 0
