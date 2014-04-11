@@ -22,6 +22,12 @@ Then copy `settings_example.py` to `settings.py` and modify the configuration to
 
 It can be disabled by setting the `nsapi_run` tuple in memcache to `False`.
 
+`notifications_server.py` has been included to provide a web interface.
+
+```
+pip install Flask
+```
+
 ## Methods
 
 The call `vertrektijden` returns two lists containing dicts. The first list is the list with current disruptions and work (I think those are network-wide). Syntax:
