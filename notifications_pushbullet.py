@@ -90,10 +90,11 @@ for route in settings.routes:
             if 'Rijdt' in vertrek['details'] and route['keyword'] in vertrek['route']:
                 delays.append("{3}:\n{2} naar {1}: {0}".format(vertrek['details'], vertrek['destination'], vertrek['route'], route['departure']))
 
-    route_text = 'Route {0} - {1} van {2}'.format(route['departure'], route['destination'], route['time'])
-
     planned_route = ns_api.route(route['departure'], route['destination'], '', today, route['time'])
     logger.debug(planned_route)
+
+    route_text = 'Route {0} - {1} van {2}'.format(route['departure'], route['destination'], planned_route[0]['departure'])
+
     if planned_route[0]['departure_delay'] > 0:
         delays.append("{0}\nVertrekvertraging: {1} minuten op {2}".format(route_text, planned_route[0]['departure_delay'], planned_route[0]['departure_platform']))
     if planned_route[0]['arrival_delay'] > 0:

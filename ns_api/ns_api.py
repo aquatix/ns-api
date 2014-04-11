@@ -173,6 +173,8 @@ def route(depart_station, to_station, via, date, time):
                         counter += 1
                     rowcounter += 1
                     if rowcounter == 4:
+                        if 'departure_delay' not in route_parts[partcounter]:
+                            route_parts[partcounter]['departure_delay'] = 0
                         rowcounter = 0
                         partcounter += 1
                         route_parts.append({})
