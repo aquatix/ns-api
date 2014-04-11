@@ -2,6 +2,7 @@ import logging
 import pylibmc
 from flask import Flask
 from flask import jsonify
+from flask import request
 app = Flask(__name__)
 
 # create logger
@@ -32,21 +33,23 @@ def nsapi_status():
     result.append("\n".join(mc['nsapi_delays']))
     return "\n".join(result)
 
-@app.route('/disable')
-def disable_notifier():
+@app.route('/disable/<location>')
+def disable_notifier(location=None):
+    location_prefix = '[location: %s]' % location
     if 'nsapi_run' in mc:
-        logger.info('nsapi_run was %s, disabling' % mc['nsapi_run'])
+        logger.info('%s nsapi_run was %s, disabling' % (location_prefix, mc['nsapi_run']))
     else:
-        logger.info('no nsapi_run tuple in memcache, creating with value False')
+        logger.info('%s no nsapi_run tuple in memcache, creating with value False' % location_prefix)
     mc['nsapi_run'] = False
     return 'Disabling notifications'
 
-@app.route('/enable')
-def enable_notifier():
+@app.route('/enable/<location>')
+def enable_notifier(location=None):
+    location_prefix = '[location: %s]' % location
     if 'nsapi_run' in mc:
-        logger.info('nsapi_run was %s, enabling' % mc['nsapi_run'])
+        logger.info('%s nsapi_run was %s, enabling' % (location_prefix, mc['nsapi_run']))
     else:
-        logger.info('no nsapi_run tuple in memcache, creating with value True')
+        logger.info('%s no nsapi_run tuple in memcache, creating with value True' % location_prefix)
     mc['nsapi_run'] = True
     return 'Enabling notifications'
 
