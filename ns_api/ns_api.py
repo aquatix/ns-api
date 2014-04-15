@@ -135,6 +135,8 @@ def route(depart_station, to_station, via, date, time):
                         if rowcounter == 0 and counter == 0:
                             route_parts[partcounter]['departure'] = _parse_da_time(cell.b.get_text().strip())
                         if rowcounter == 0 and counter == 1:
+                            if 'departure' not in route_parts[partcounter]:
+                                route_parts[partcounter]['departure'] = 'unknown'
                             departure_mutation = ''
                             try:
                                 departure_mutation = cell.b.font.get_text().replace(u'\xa0', u' ')
