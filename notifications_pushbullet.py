@@ -138,5 +138,5 @@ if should_send == True:
         # Send a note with all delays to device 5 of the list from PushBullet:
         #logger.info('sending delays to device %s with index %s' % (devices[settings.device_index]["extras"]["model"], settings.device_index))
         #p.pushNote(devices[settings.device_index]["id"], 'NS Vertraging', "\n\n".join(delays))
-        logger.info('sending delays to device %s with id %s' % (settings.device_id, settings.device_index))
+        logger.info('sending delays to device with id %s' % (settings.device_id))
         p.pushNote(settings.device_id, 'NS Vertraging', "\n\n".join(delays))
