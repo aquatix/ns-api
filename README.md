@@ -10,6 +10,11 @@ For example, I use the library to push notifications about my route to my phone 
 * On Debian-based distro's, install `memcached`, `python-pylibmc` and `python-bs4`, the latter (BeautifulSoup) is needed for `ns_api.py`.
 * With pip, install `pylibmc`, `BeautifulSoup4`. You need to have memcached running on your system.
 
+As pyPushbullet has been recently rewritten to use Pushbullet's API v2, we also need python-magic and python-websocket:
+
+* On Debian-based distro's, apt-get install `python-magic` and `python-websocket`.
+* With pip, install `magic` and `websocket`.
+
 Then copy `settings_example.py` to `settings.py` and modify the configuration to your needs. You might want to check which index your desired device is on in the Pushbullet list (you can also go to your account on [Pushbullet.com](https://www.pushbullet.com/) and count in your device list, starting with 0 for the first).
 
 `notifications_pushbullet.py` is best called through a crontab entry, for example:
