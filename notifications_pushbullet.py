@@ -38,9 +38,9 @@ logger.addHandler(ch)
 api_key = settings.pushbullet_key
 p = PushBullet(api_key)
 # Get a list of devices. A device to push this to will be selected later on
-devices = p.getDevices()
+#devices = p.getDevices()
 
-logger.debug(devices)
+#logger.debug(devices)
 
 mc = pylibmc.Client(['127.0.0.1'], binary=True, behaviors={'tcp_nodelay': True, 'ketama': True})
 
@@ -136,5 +136,7 @@ if should_send == True:
 
     if len(delays) > 0:
         # Send a note with all delays to device 5 of the list from PushBullet:
-        logger.info('sending delays to device %s with index %s' % (devices[settings.device_index]["extras"]["model"], settings.device_index))
-        p.pushNote(devices[settings.device_index]["id"], 'NS Vertraging', "\n\n".join(delays))
+        #logger.info('sending delays to device %s with index %s' % (devices[settings.device_index]["extras"]["model"], settings.device_index))
+        #p.pushNote(devices[settings.device_index]["id"], 'NS Vertraging', "\n\n".join(delays))
+        logger.info('sending delays to device %s with id %s' % (settings.device_id, settings.device_index))
+        p.pushNote(settings.device_id, 'NS Vertraging', "\n\n".join(delays))
