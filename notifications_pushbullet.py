@@ -35,13 +35,6 @@ ch.setFormatter(formatter)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
-api_key = settings.pushbullet_key
-p = PushBullet(api_key)
-# Get a list of devices. A device to push this to will be selected later on
-#devices = p.getDevices()
-
-#logger.debug(devices)
-
 mc = pylibmc.Client(['127.0.0.1'], binary=True, behaviors={'tcp_nodelay': True, 'ketama': True})
 
 should_run = True
@@ -51,9 +44,9 @@ else:
     logger.info('no run tuple in memcache, creating')
     mc['nsapi_run'] = should_run
 
-logger.debug('should_run: %s' % should_run)
+logger.debug('should_run: %s', should_run)
 
-if should_run == False:
+if not should_run:
     sys.exit(0)
 
 delays = []
@@ -67,18 +60,17 @@ for route in settings.routes:
     delta = current_time - route_time
     if current_time > route_time and delta.total_seconds() > MAX_TIME_PAST:
         # the route was too long ago ago, lets skip it
-        logger.info('route %s was too long ago, skipped' % route)
+        logger.info('route %s was too long ago, skipped', route)
         continue
     if current_time < route_time and abs(delta.total_seconds()) > MAX_TIME_FUTURE:
         # the route is too much in the future, lets skip it
-        logger.info('route %s was too much in the future, skipped' % route)
+        logger.info('route %s was too much in the future, skipped', route)
         continue
 
     try:
         route_delays, vertrekken = ns_api.vertrektijden(route['departure'])
         for vertrek in vertrekken:
             logger.debug(vertrek)
-            #print vertrek
             if route['keyword'] == None:
                 if vertrek['delay'] > 0  and route['destination'] in vertrek['route']:
                     delays.append("{4}:\n{2} {3} heeft {0} minuten vertraging naar {1}".format(vertrek['delay'], vertrek['destination'], vertrek['details'], vertrek['route'], route['departure']))
@@ -112,13 +104,13 @@ for route in settings.routes:
     except urllib2.URLError, e:
         delays.append('Error occurred: {0}'.format(e))
 
-logger.debug('all current delays: %s' % delays)
+logger.debug('all current delays: %s', delays)
 
 # deduplicate the list (useful when having multiple routes from the same origin):
 if len(delays) > 1:
     delays = unique(delays)
 
-logger.debug('current delays, deduped: %s' % delays)
+logger.debug('current delays, deduped: %s', delays)
 
 should_send = False
 
@@ -127,7 +119,7 @@ if 'nsapi_delays' not in mc:
     logger.info('previous delays not found')
     should_send = True
 elif mc['nsapi_delays'] != delays:
-    logger.info('new delays are different: %s vs %s' % (mc['delays'], delays))
+    logger.info('new delays are different: %s vs %s', (mc['delays'], delays))
     should_send = True
 
 if should_send == True:
@@ -136,7 +128,7 @@ if should_send == True:
 
     if len(delays) > 0:
         # Send a note with all delays to device 5 of the list from PushBullet:
-        #logger.info('sending delays to device %s with index %s' % (devices[settings.device_index]["extras"]["model"], settings.device_index))
-        #p.pushNote(devices[settings.device_index]["id"], 'NS Vertraging', "\n\n".join(delays))
-        logger.info('sending delays to device with id %s' % (settings.device_id))
+        api_key = settings.pushbullet_key
+        p = PushBullet(api_key)
+        logger.info('sending delays to device with id %s', (settings.device_id))
         p.pushNote(settings.device_id, 'NS Vertraging', "\n\n".join(delays))

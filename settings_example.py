@@ -3,7 +3,7 @@
 # Pushbullet API key. See their website
 pushbullet_key = "YOURKEYHERE"
 # Device to push to. See p.getDevices() for the List of which to choose
-device_index = 0
+device_id = "DEVICEKEYHERE"
 
 routes = [
          {'departure': 'Heemskerk', 'destination': 'Hoofddorp', 'time': '7:40', 'keyword': 'Beverwijk' },
