@@ -68,7 +68,10 @@ for route in settings.routes:
         continue
 
     try:
-        route_delays, vertrekken = ns_api.vertrektijden(route['departure'])
+        disruptions, vertrekken = ns_api.vertrektijden(route['departure'])
+        for disruption in disruptions:
+            logger.debug(disruption)
+            delays.append('Storing rond {0}: {1}'.format(disruption['route'], disruption['info']))
         for vertrek in vertrekken:
             logger.debug(vertrek)
             if route['keyword'] == None:
@@ -119,7 +122,7 @@ if 'nsapi_delays' not in mc:
     logger.info('previous delays not found')
     should_send = True
 elif mc['nsapi_delays'] != delays:
-    logger.info('new delays are different: %s vs %s', (mc['delays'], delays))
+    logger.info('new delays are different: %s vs %s', mc['delays'], delays)
     should_send = True
 
 if should_send == True:
