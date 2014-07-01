@@ -24,7 +24,6 @@ def _parse_da_time(time):
 
 
 def vertrektijden(station):
-    #url = 'http://www.ns.nl/actuele-vertrektijden/main.action?xml=false'
     url = 'http://www.ns.nl/actuele-vertrektijden/main.action?xml=true'
     user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
     header = { 'User-Agent' : user_agent }
@@ -112,7 +111,6 @@ def route(depart_station, to_station, via, date, time):
 
     data = urllib.urlencode(values)
     req = urllib2.Request(url, data, header)
-    #req = urllib2.Request(url+data, None, header)
     response = urllib2.urlopen(req)
     page = response.read()
     soup = BeautifulSoup(page)
@@ -128,10 +126,8 @@ def route(depart_station, to_station, via, date, time):
                 partcounter = 0
                 rowcounter = 0
                 for part in table.find_all('tr'):
-                    #print part
                     counter = 0
                     for cell in part.find_all('td'):
-                        #print "%s %d %d %d" % (cell, partcounter, rowcounter, counter)
                         if rowcounter == 0 and counter == 0:
                             route_parts[partcounter]['departure'] = _parse_da_time(cell.b.get_text().strip())
                         if rowcounter == 0 and counter == 1:
