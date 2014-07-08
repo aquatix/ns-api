@@ -50,6 +50,7 @@ if not should_run:
     sys.exit(0)
 
 delays = []
+disruptions = []
 
 today = datetime.datetime.now().strftime('%d-%m')
 today_date = datetime.datetime.now().strftime('%d-%m-%Y')
@@ -68,10 +69,10 @@ for route in settings.routes:
         continue
 
     try:
-        disruptions, vertrekken = ns_api.vertrektijden(route['departure'])
-        for disruption in disruptions:
+        verstoringen, vertrekken = ns_api.vertrektijden(route['departure'])
+        for disruption in verstoringen:
             logger.debug(disruption)
-            delays.append('Storing rond {0}: {1}'.format(disruption['route'], disruption['info']))
+            disruptions.append('Storing rond {0}: {1}'.format(disruption['route'], disruption['info']))
         for vertrek in vertrekken:
             logger.debug(vertrek)
             if route['keyword'] == None:
@@ -112,25 +113,48 @@ logger.debug('all current delays: %s', delays)
 # deduplicate the list (useful when having multiple routes from the same origin):
 if len(delays) > 1:
     delays = unique(delays)
+if len(disruptions) > 1:
+    disruptions = unique(disruptions)
 
 logger.debug('current delays, deduped: %s', delays)
+logger.debug('all current disruptions, deduped: %s', disruptions)
 
-should_send = False
+should_send_disruptions = False
+should_send_delays = False
+
+# Check whether there are previous disruptions in memcache
+if 'nsapi_disruptions' not in mc:
+    logger.info('previous disruptions not found')
+    should_send_disruptions = True
+elif mc['nsapi_disruptions'] != disruptions:
+    logger.info('new disruptios are different: %s vs %s', mc['disruptions'], disruptions)
+    should_send_disruptions = True
+
+if should_send_disruptions == True:
+    logger.debug('stored new disruptions in memcache')
+    mc['nsapi_disruptions'] = disruptions
+
+    if len(disruptions) > 0:
+        # Send a note with all delays to device with index settings.device_id of the list from PushBullet:
+        api_key = settings.pushbullet_key
+        p = PushBullet(api_key)
+        logger.info('sending disruptions to device with id %s', (settings.device_id))
+        p.pushNote(settings.device_id, 'NS Storing', "\n\n".join(disruptions))
 
 # Check whether there are previous delays in memcache
 if 'nsapi_delays' not in mc:
     logger.info('previous delays not found')
-    should_send = True
+    should_send_delays = True
 elif mc['nsapi_delays'] != delays:
     logger.info('new delays are different: %s vs %s', mc['delays'], delays)
-    should_send = True
+    should_send_delays = True
 
-if should_send == True:
+if should_send_delays == True:
     logger.debug('stored new delays in memcache')
     mc['nsapi_delays'] = delays
 
     if len(delays) > 0:
-        # Send a note with all delays to device 5 of the list from PushBullet:
+        # Send a note with all delays to device with index settings.device_id of the list from PushBullet:
         api_key = settings.pushbullet_key
         p = PushBullet(api_key)
         logger.info('sending delays to device with id %s', (settings.device_id))
