@@ -127,7 +127,7 @@ if 'nsapi_disruptions' not in mc:
     logger.info('previous disruptions not found')
     should_send_disruptions = True
 elif mc['nsapi_disruptions'] != disruptions:
-    logger.info('new disruptios are different: %s vs %s', mc['disruptions'], disruptions)
+    logger.info('new disruptios are different: %s vs %s', mc['nsapi_disruptions'], disruptions)
     should_send_disruptions = True
 
 if should_send_disruptions == True:
@@ -146,7 +146,7 @@ if 'nsapi_delays' not in mc:
     logger.info('previous delays not found')
     should_send_delays = True
 elif mc['nsapi_delays'] != delays:
-    logger.info('new delays are different: %s vs %s', mc['delays'], delays)
+    logger.info('new delays are different: %s vs %s', mc['nsapi_delays'], delays)
     should_send_delays = True
 
 if should_send_delays == True:
