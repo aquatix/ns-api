@@ -27,15 +27,24 @@ mc = pylibmc.Client(['127.0.0.1'], binary=True, behaviors={'tcp_nodelay': True, 
 
 @app.route('/')
 def nsapi_status():
+    logger.info('[%s][status] nsapi_run: %s', request.remote_addr, mc['nsapi_run'])
     result = []
+    result.append('<h2>NS api status</h2>')
     if 'nsapi_run' in mc:
         result.append("nsapi_run: %s" % mc['nsapi_run'])
+    result.append('<h2>Disruptions</h2>')
+    result.append('<pre>')
+    result.append("\n".join(mc['nsapi_disruptions']))
+    result.append('</pre>')
+    result.append('<h2>Delays</h2>')
+    result.append('<pre>')
     result.append("\n".join(mc['nsapi_delays']))
+    result.append('</pre>')
     return "\n".join(result)
 
 @app.route('/disable/<location>')
 def disable_notifier(location=None):
-    location_prefix = '[location: %s]' % location
+    location_prefix = '[{0}][location: {1}]'.format(request.remote_addr, location)
     if 'nsapi_run' in mc:
         logger.info('%s nsapi_run was %s, disabling' % (location_prefix, mc['nsapi_run']))
     else:
@@ -45,7 +54,7 @@ def disable_notifier(location=None):
 
 @app.route('/enable/<location>')
 def enable_notifier(location=None):
-    location_prefix = '[location: %s]' % location
+    location_prefix = '[{0}][location: {1}]'.format(request.remote_addr, location)
     if 'nsapi_run' in mc:
         logger.info('%s nsapi_run was %s, enabling' % (location_prefix, mc['nsapi_run']))
     else:
