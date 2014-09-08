@@ -126,9 +126,14 @@ should_send_delays = False
 if 'nsapi_disruptions' not in mc:
     logger.info('previous disruptions not found')
     should_send_disruptions = True
-elif mc['nsapi_disruptions'] != disruptions:
-    logger.info('new disruptios are different: %s vs %s', mc['nsapi_disruptions'], disruptions)
-    should_send_disruptions = True
+else:
+    disruptions_tosend = []
+    for disruption in disruptions:
+        if disruption not in mc['nsapi_disruptions']:
+            disruptions_tosend.append(disruption)
+            logger.info('new disruption to be sent: %s', disruption)
+            should_send_disruptions = True
+    disruptions = disruptions_tosend
 
 if should_send_disruptions == True:
     logger.debug('stored new disruptions in memcache')
@@ -145,9 +150,14 @@ if should_send_disruptions == True:
 if 'nsapi_delays' not in mc:
     logger.info('previous delays not found')
     should_send_delays = True
-elif mc['nsapi_delays'] != delays:
-    logger.info('new delays are different: %s vs %s', mc['nsapi_delays'], delays)
-    should_send_delays = True
+else:
+    delays_tosend = []
+    for delay in delays:
+        if delay not in mc['nsapi_delays']:
+            delays_tosend.append(delay)
+            logger.info('new delay to be sent: %s', delay)
+            should_send_delays = True
+    delays = delays_tosend
 
 if should_send_delays == True:
     logger.debug('stored new delays in memcache')

@@ -40,7 +40,7 @@ def vertrektijden(station):
     disruptions = []
 
     disruptionlist = soup.find_all('ul', {'class': 'list-faqs'})
-    if len(disruptionlist) > 1:
+    if len(disruptionlist) > 0:
         for row in disruptionlist[0].find_all('li'):
             try:
                 if 'drawer-item' in row['class']:
