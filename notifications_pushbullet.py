@@ -122,50 +122,50 @@ logger.debug('all current disruptions, deduped: %s', disruptions)
 should_send_disruptions = False
 should_send_delays = False
 
+disruptions_tosend = []
 # Check whether there are previous disruptions in memcache
 if 'nsapi_disruptions' not in mc:
     logger.info('previous disruptions not found')
     should_send_disruptions = True
+    disruptions_tosend = disruptions
 else:
-    disruptions_tosend = []
     for disruption in disruptions:
         if disruption not in mc['nsapi_disruptions']:
             disruptions_tosend.append(disruption)
             logger.info('new disruption to be sent: %s', disruption)
             should_send_disruptions = True
-    disruptions = disruptions_tosend
 
 if should_send_disruptions == True:
     logger.debug('stored new disruptions in memcache')
     mc['nsapi_disruptions'] = disruptions
 
-    if len(disruptions) > 0:
+    if len(disruptions_tosend) > 0:
         # Send a note with all delays to device with index settings.device_id of the list from PushBullet:
         api_key = settings.pushbullet_key
         p = PushBullet(api_key)
         logger.info('sending disruptions to device with id %s', (settings.device_id))
-        p.pushNote(settings.device_id, 'NS Storing', "\n\n".join(disruptions))
+        p.pushNote(settings.device_id, 'NS Storing', "\n\n".join(disruptions_tosend))
 
+delays_tosend = []
 # Check whether there are previous delays in memcache
 if 'nsapi_delays' not in mc:
     logger.info('previous delays not found')
     should_send_delays = True
+    delays_tosend = delays
 else:
-    delays_tosend = []
     for delay in delays:
         if delay not in mc['nsapi_delays']:
             delays_tosend.append(delay)
             logger.info('new delay to be sent: %s', delay)
             should_send_delays = True
-    delays = delays_tosend
 
 if should_send_delays == True:
     logger.debug('stored new delays in memcache')
     mc['nsapi_delays'] = delays
 
-    if len(delays) > 0:
+    if len(delays_tosend) > 0:
         # Send a note with all delays to device with index settings.device_id of the list from PushBullet:
         api_key = settings.pushbullet_key
         p = PushBullet(api_key)
         logger.info('sending delays to device with id %s', (settings.device_id))
-        p.pushNote(settings.device_id, 'NS Vertraging', "\n\n".join(delays))
+        p.pushNote(settings.device_id, 'NS Vertraging', "\n\n".join(delays_tosend))
