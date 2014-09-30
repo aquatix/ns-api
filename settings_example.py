@@ -5,6 +5,8 @@ pushbullet_key = "YOURKEYHERE"
 # Device to push to. See p.getDevices() for the List of which to choose
 device_id = "DEVICEKEYHERE"
 
+arrival_delays = True
+
 routes = [
         {'departure': 'Heemskerk', 'destination': 'Hoofddorp', 'time': '7:44', 'keyword': 'Beverwijk', 'minimum': 5 },
          {'departure': 'Amsterdam Sloterdijk', 'destination': 'Hoofddorp', 'time': '8:19', 'keyword': None },

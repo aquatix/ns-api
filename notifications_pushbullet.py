@@ -99,7 +99,7 @@ for route in settings.routes:
 
             if planned_route[0]['departure_delay'] > 0 and ('minimum' in route and planned_route[0]['departure_delay'] >= route['minimum']):
                 delays.append("{0}\nVertrekvertraging: {1} minuten op {2}".format(route_text, planned_route[0]['departure_delay'], planned_route[0]['departure_platform']))
-            if planned_route[0]['arrival_delay'] > 0 and ('minimum' in route and planned_route[0]['arrival_delay'] >= route['minimum']):
+            if self.arrival_delays and planned_route[0]['arrival_delay'] > 0 and ('minimum' in route and planned_route[0]['arrival_delay'] >= route['minimum']):
                 delays.append("{0}\nAankomstvertraging: {1} minuten op {2}".format(route_text, planned_route[0]['arrival_delay'], planned_route[0]['arrival_platform']))
 
             if 'arrival_platform_mutation' in planned_route[0]:
