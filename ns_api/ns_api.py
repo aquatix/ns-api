@@ -11,7 +11,7 @@ def _parse_time_delay(time):
     delay = 0
     delay_unit = ''
     if len(splitted) > 1:
-        delay = splitted[2]
+        delay = int(splitted[2])
         delay_unit = splitted[3]
     return timestamp, delay, delay_unit
 
@@ -173,6 +173,8 @@ def route(depart_station, to_station, via, date, time):
                     if rowcounter == 4:
                         if 'departure_delay' not in route_parts[partcounter]:
                             route_parts[partcounter]['departure_delay'] = 0
+                        route_parts[partcounter]['departure_delay'] = int(route_parts[partcounter]['departure_delay'])
+                        route_parts[partcounter]['arrival_delay'] = int(route_parts[partcounter]['arrival_delay'])
                         rowcounter = 0
                         partcounter += 1
                         route_parts.append({})
