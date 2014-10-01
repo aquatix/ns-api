@@ -72,7 +72,7 @@ for route in settings.routes:
         verstoringen, vertrekken = ns_api.vertrektijden(route['departure'])
         for disruption in verstoringen:
             logger.debug(disruption)
-            disruptions.append('{0}: {1}'.format(disruption['route'], disruption['info']))
+            disruptions.append(u'{0}: {1}'.format(disruption['route'], disruption['info']))
         for vertrek in vertrekken:
             logger.debug(vertrek)
             if route['keyword'] == None:
