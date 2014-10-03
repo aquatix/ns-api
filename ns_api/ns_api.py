@@ -16,6 +16,21 @@ def _parse_time_delay(time):
     return timestamp, delay, delay_unit
 
 
+def _parse_routetime_delay(time):
+    """
+    Parse timestamp into time and delay
+    """
+    splitted = time.split()
+    print(splitted)
+    timestamp = splitted[0]
+    delay = 0
+    delay_unit = ''
+    if len(splitted) > 1:
+        delay = int(splitted[1])
+        delay_unit = splitted[2]
+    return delay, delay_unit
+
+
 def _parse_da_time(time):
     """
     Parse timestamp with D or A from departure or arrival
@@ -173,8 +188,8 @@ def route(depart_station, to_station, via, date, time):
                     if rowcounter == 4:
                         if 'departure_delay' not in route_parts[partcounter]:
                             route_parts[partcounter]['departure_delay'] = 0
-                        route_parts[partcounter]['departure_delay'] = int(route_parts[partcounter]['departure_delay'])
-                        route_parts[partcounter]['arrival_delay'] = int(route_parts[partcounter]['arrival_delay'])
+                        route_parts[partcounter]['departure_delay'], delayunit = _parse_routetime_delay(route_parts[partcounter]['departure_delay'])
+                        route_parts[partcounter]['arrival_delay'], arrivalunit = _parse_routetime_delay(route_parts[partcounter]['arrival_delay'])
                         rowcounter = 0
                         partcounter += 1
                         route_parts.append({})
