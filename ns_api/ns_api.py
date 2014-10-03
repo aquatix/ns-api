@@ -24,7 +24,6 @@ def _parse_routetime_delay(time):
     if isinstance( time, ( int, long ) ):
         return time, None
     splitted = time.split()
-    print(splitted)
     timestamp = splitted[0]
     delay = 0
     delay_unit = ''
