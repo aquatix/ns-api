@@ -19,7 +19,10 @@ def _parse_time_delay(time):
 def _parse_routetime_delay(time):
     """
     Parse timestamp into time and delay
+    Timestamp has form '+ 3 min' or just an integer
     """
+    if isinstance( time, ( int, long ) ):
+        return time, None
     splitted = time.split()
     print(splitted)
     timestamp = splitted[0]
