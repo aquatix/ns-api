@@ -8,14 +8,16 @@ Query the Dutch railways about your routes, getting info on delays and more. See
 For example, I use the library to push notifications about my route to my phone through [Pushbullet](http://pushbullet.com). Clone [pyPushBullet](https://github.com/Azelphur/pyPushBullet) and include the pushbullet.py in your project. The program I use to do this is included in the repository as `notifications_pushbullet.py`, which I automated through a crontab entry to check around the times I want. To run it, first install its dependencies if you didn't already have them:
 
 * On Debian-based distro's, install `memcached`, `python-pylibmc` and `python-bs4`, the latter (BeautifulSoup) is needed for `ns_api.py`.
-* With pip, install `pylibmc`, `BeautifulSoup4`, `requests`. You need to have memcached running on your system.
+* Alternatively, with pip, install `pylibmc`, `BeautifulSoup4`, `requests`. You need to have memcached running on your system.
 
 As pyPushbullet has been recently rewritten to use Pushbullet's API v2, we also need python-magic and python-websocket:
 
 * On Debian-based distro's, apt-get install `python-magic` and `python-websocket` (might be `websocket-client` on for example Ubuntu 12.04).
-* With pip, install `magic` and `websocket`.
+* Or with pip, install `magic` and `websocket`.
 
 Then copy `settings_example.py` to `settings.py` and modify the configuration to your needs. You might want to check which index your desired device is on in the Pushbullet list (you can also go to your account on [Pushbullet.com](https://www.pushbullet.com/) and count in your device list, starting with 0 for the first).
+
+N.B.: if you encounter issues after updating from the repo, try checking [settings_example.py](settings_example.py) against your settings.py. Some new configuration items might be added.
 
 `notifications_pushbullet.py` is best called through a crontab entry, for example:
 
