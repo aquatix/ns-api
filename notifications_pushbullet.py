@@ -7,7 +7,7 @@ from pushbullet import PushBullet
 import pylibmc
 import urllib2
 
-def unique(my_list): 
+def unique(my_list):
     result = []
     for item in my_list:
         if item not in result:
@@ -22,7 +22,7 @@ MAX_TIME_FUTURE = 3600
 logger = logging.getLogger('ns_api')
 logger.setLevel(logging.DEBUG)
 # create file handler which logs even debug messages
-fh = logging.FileHandler('ns_api.log')
+fh = logging.FileHandler('ns_api_{0}.log'.format(datetime.date.today().isoformat()))
 fh.setLevel(logging.DEBUG)
 # create console handler with a higher log level
 ch = logging.StreamHandler()
