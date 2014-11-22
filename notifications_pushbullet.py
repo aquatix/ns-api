@@ -81,12 +81,18 @@ for route in settings.routes:
                 # 'Rijdt vandaag niet'
                 if 'Rijdt' in vertrek['details'] and route['destination'] in vertrek['route']:
                     delays.append("{4}:\n{2} naar {1}: {0}".format(vertrek['details'], vertrek['destination'], vertrek['route'], route['departure']))
+                elif route['destination'] in vertrek['route'] and 'strict' in route and route['strict'] == True and vertrek['time'] != route['time']:
+                    logger.debug('Rijdt niet: {0}, {1}'.format(vertrek['time'], route['time']))
+                    delays.append("{2} naar {1} rijdt vandaag niet".format(vertrek['details'], vertrek['destination'], vertrek['route'], route['departure']))
             else:
                 if vertrek['delay'] > 0  and route['keyword'] in vertrek['route'] and ('minimum' in route and vertrek['delay'] >= route['minimum']):
-                    delays.append("{4}:\n{2} {3} heeft {0} minuten vertraging naar {1}".format(vertrek['delay'], vertrek['destination'], vertrek['details'], vertrek['route'], route['departure']))
+                    delays.append("{4}:\n{2} {3} heeft {0} minuten vertraging naar {1}".format(vertrek['delay'], vertrek['destination'], vertrek['details']))
                 # 'Rijdt vandaag niet'
                 if 'Rijdt' in vertrek['details'] and route['keyword'] in vertrek['route']:
                     delays.append("{3}:\n{2} naar {1}: {0}".format(vertrek['details'], vertrek['destination'], vertrek['route'], route['departure']))
+                elif route['destination'] in vertrek['route'] and 'strict' in route and route['strict'] == True and vertrek['time'] != route['time']:
+                    logger.debug('Rijdt niet: {0}, {1}'.format(vertrek['time'], route['time']))
+                    delays.append("{2} naar {1} rijdt vandaag niet".format(vertrek['details'], vertrek['destination'], vertrek['route'], route['departure']))
     except urllib2.URLError, e:
         delays.append('Error occurred: {0}'.format(e))
 
@@ -101,6 +107,9 @@ for route in settings.routes:
                 delays.append("{0}\nVertrekvertraging: {1} minuten op {2}".format(route_text, planned_route[0]['departure_delay'], planned_route[0]['departure_platform']))
             if settings.arrival_delays and planned_route[0]['arrival_delay'] > 0 and ('minimum' in route and planned_route[0]['arrival_delay'] >= route['minimum']):
                 delays.append("{0}\nAankomstvertraging: {1} minuten op {2}".format(route_text, planned_route[0]['arrival_delay'], planned_route[0]['arrival_platform']))
+            if 'strict' in route and route['strict'] == True and planned_route[0]['departure'] != route['time']:
+                logger.debug('Rijdt niet: {0}, {1}'.format(planned_route[0]['departure'], route['time']))
+                delays.append("{0} naar {1} rijdt vandaag niet".format(planned_route[0]['train'], route['destination'], route['departure']))
 
             if 'arrival_platform_mutation' in planned_route[0]:
                 # the platform is changed
