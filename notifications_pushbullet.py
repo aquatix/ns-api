@@ -20,7 +20,10 @@ MAX_TIME_FUTURE = 3600
 
 # create logger
 logger = logging.getLogger('ns_api')
-logger.setLevel(logging.DEBUG)
+try:
+    logger.setLevel(settings.debug_level)
+except:
+    logger.setLevel(logging.DEBUG)
 # create file handler which logs even debug messages
 fh = logging.FileHandler('ns_api_{0}.log'.format(datetime.date.today().isoformat()))
 fh.setLevel(logging.DEBUG)

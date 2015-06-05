@@ -6,6 +6,9 @@ pushbullet_key = "YOURKEYHERE"
 device_id = "DEVICEKEYHERE"
 
 arrival_delays = True
+# Uncomment the next two lines if you only want ERROR-level logging (or change to logging.WARNING for example)
+#import logging
+#debug_level = logging.ERROR
 
 # 'minimum': amount of time a delay needs to be at minimum for which a notification is fired
 # 'strict': if True and no connection is found for that exact time stamp, 'train cancelled' is fired
