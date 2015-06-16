@@ -1,3 +1,128 @@
+import xmltodict
+import time
+
+from datetime import datetime, timedelta
+
+from pytz import timezone, utc
+from pytz.tzinfo import StaticTzInfo
+
+class OffsetTime(StaticTzInfo):
+    def __init__(self, offset):
+        """A dumb timezone based on offset such as +0530, -0600, etc.
+        """
+        hours = int(offset[:3])
+        minutes = int(offset[0] + offset[3:])
+        self._utcoffset = timedelta(hours=hours, minutes=minutes)
+
+def load_datetime(value, format):
+    if format.endswith('%z'):
+        format = format[:-2]
+        offset = value[-5:]
+        value = value[:-5]
+        return OffsetTime(offset).localize(datetime.strptime(value, format))
+
+    return datetime.strptime(value, format)
+
+def dump_datetime(value, format):
+    return value.strftime(format)
+
+
+class Departure():
+
+    def __init__(self, departure_dict):
+        trip_number = departure_dict['RitNummer']
+        departure_time = departure_dict['VertrekTijd']
+        try:
+            has_delay = True
+            departure_delay = departure_dict['VertrekVertraging']
+            departure_delay_text = departure_dict['VertrekVertragingTekst']
+        except:
+            has_delay = False
+        departure_platform = departure_dict['VertrekSpoor']
+        departure_platform_changed = departure_dict['VertrekSpoor']['@wijziging']
+
+        destination = departure_dict['EindBestemming']
+        try:
+            route_text = departure_dict['RouteTekst']
+        except KeyError:
+            route_text = None
+
+        train_type = departure_dict=['TreinSoort']
+        carrier = departure_dict=['Vervoerder']
+
+        try:
+            journey_tip = departure_dict=['ReisTip']
+        except KeyError:
+            journey_tip = None
+
+        try:
+            remarks = departure_dict=['Opmerkingen']
+        except KeyError:
+            remarks = []
+
+
+    def __unicode__(self):
+        return 'trip_number: ' + self.trip_number
+
+
+
+class Trip():
+
+    def __init__(self, trip_dict):
+        nr_transfers = trip_dict['AantalOverstappen']
+        travel_time_planned = trip_dict['GeplandeReisTijd']
+        travel_time_actual = trip_dict['ActueleReisTijd']
+        is_optimal = trip_dict['Optimaal']
+        status = trip_dict['Status']
+
+        format = "%Y-%m-%dT%H:%M:%S%z"
+
+        #departure_time_planned = time.strptime(trip_dict['GeplandeVertrekTijd'], "%Y-%m-%dT%H:%M:%S%z")
+        try:
+            #departure_time_planned = time.strptime(trip_dict['GeplandeVertrekTijd'], "")
+            departure_time_planned = load_datetime(trip_dict['GeplandeVertrekTijd'], format)
+        except:
+            departure_time_planned = None
+        print departure_time_planned
+
+
+        trip_parts = trip_dict['ReisDeel']
+        print(trip_parts)
+
+
+    def __unicode__(self):
+        return 'departure_time_planned: ' + self.departure_time_planned
+
+
+#with open('actuele_vertrektijden.xml') as fd:
+with open('examples.xml') as fd:
+    obj = xmltodict.parse(fd.read())
+
+departures = []
+
+#for departure in obj['ActueleVertrekTijden']:
+#    print departure['VertrekkendeTrein']
+for departure in obj['ActueleVertrekTijden']['VertrekkendeTrein']:
+    #print departure
+    newdep = Departure(departure)
+    departures.append(newdep)
+    print repr(newdep)
+
+
+
+with open('reismogelijkheden.xml') as fd:
+    obj = xmltodict.parse(fd.read())
+
+trips = []
+
+for trip in obj['ReisMogelijkheden']['ReisMogelijkheid']:
+    #print departure
+    newtrip = Trip(trip)
+    trips.append(newtrip)
+    print repr(newtrip)
+
+
+
 import urllib2
 import urllib
 from bs4 import BeautifulSoup
