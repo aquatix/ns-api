@@ -65,6 +65,11 @@ class Departure():
         return 'trip_number: ' + self.trip_number
 
 
+class TripSubpart():
+
+    def __init__(self, part_dict):
+        transporter = part_dict['Vervoerder']
+
 
 class Trip():
 
@@ -85,9 +90,32 @@ class Trip():
             departure_time_planned = None
         print departure_time_planned
 
+        try:
+            departure_time_actual = load_datetime(trip_dict['ActueleVertrekTijd'], format)
+        except:
+            departure_time_actual = None
+
+        try:
+            arrival_time_planned = load_datetime(trip_dict['GeplandeAankomstTijd'], format)
+        except:
+            arrival_time_planned = None
+
+        try:
+            arrival_time_actual = load_datetime(trip_dict['ActueleAankomstTijd'], format)
+        except:
+            arrival_time_actual = None
+
 
         trip_parts = trip_dict['ReisDeel']
         print(trip_parts)
+        print 'wtf'
+
+        trip_parts = []
+        for part in trip_dict['ReisDeel']:
+            trip_part = TripSubpart(part)
+            trip_parts.append(trip_part)
+
+        print trip_parts
 
 
     def __unicode__(self):
