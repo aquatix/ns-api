@@ -3,6 +3,23 @@ ns_api
 
 Query the Dutch railways about your routes, getting info on delays and more. See below for the syntax and example output.
 
+## Installation
+
+First, install this system-wide package:
+
+```
+sudo apt-get install libmemcached-dev
+```
+
+Then create a new virtual-env and install the necessary packages:
+
+```
+mkvirtualenv ns-api
+
+pip install -r requirements.txt
+```
+
+
 ## Example application
 
 For example, I use the library to push notifications about my route to my phone through [Pushbullet](http://pushbullet.com). Clone [pyPushBullet](https://github.com/Azelphur/pyPushBullet) and include the pushbullet.py in your project. The program I use to do this is included in the repository as `notifications_pushbullet.py`, which I automated through a crontab entry to check around the times I want. To run it, first install its dependencies if you didn't already have them:
