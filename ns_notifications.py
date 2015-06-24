@@ -2,6 +2,7 @@
 NS trip notifier
 """
 from ns_api import ns_api
+import xmltodict
 from pushbullet import PushBullet
 import pylibmc
 import urllib2
@@ -12,13 +13,14 @@ import __main__ as main
 mc = pylibmc.Client(['127.0.0.1'], binary=True, behaviors={'tcp_nodelay': True, 'ketama': True})
 
 
-if hasattr(main, '__file__'):
-    """
-    Running in interactive mode in the Python shell
-    """
-    print("Running interactively in Python shell")
+#if hasattr(main, '__file__'):
+#    """
+#    Running in interactive mode in the Python shell
+#    """
+#    print("Running interactively in Python shell")
 
-elif __name__ == '__main__':
+#elif __name__ == '__main__':
+if __name__ == '__main__':
     """
     Notifier is ran standalone, rock and roll
     """
@@ -34,7 +36,7 @@ elif __name__ == '__main__':
     #    print departure['VertrekkendeTrein']
     for departure in obj['ActueleVertrekTijden']['VertrekkendeTrein']:
         #print departure
-        newdep = Departure(departure)
+        newdep = ns_api.Departure(departure)
         departures.append(newdep)
         print repr(newdep)
 
@@ -47,7 +49,7 @@ elif __name__ == '__main__':
 
     for trip in obj['ReisMogelijkheden']['ReisMogelijkheid']:
         #print departure
-        newtrip = Trip(trip)
+        newtrip = ns_api.Trip(trip)
         trips.append(newtrip)
         print repr(newtrip)
 

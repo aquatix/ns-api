@@ -1,5 +1,8 @@
+"""
+Library to query the official Dutch railways API
+"""
+
 import urllib2
-import xmltodict
 import time
 
 from datetime import datetime, timedelta
@@ -9,7 +12,8 @@ from pytz.tzinfo import StaticTzInfo
 
 class OffsetTime(StaticTzInfo):
     def __init__(self, offset):
-        """A dumb timezone based on offset such as +0530, -0600, etc.
+        """
+        A dumb timezone based on offset such as +0530, -0600, etc.
         """
         hours = int(offset[:3])
         minutes = int(offset[0] + offset[3:])
