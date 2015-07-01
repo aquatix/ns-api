@@ -6,6 +6,7 @@ import xmltodict
 from pushbullet import PushBullet
 import pylibmc
 import urllib2
+#import simplejson as json
 import __main__ as main
 
 
@@ -39,6 +40,7 @@ if __name__ == '__main__':
         newdep = ns_api.Departure(departure)
         departures.append(newdep)
         print repr(newdep)
+        #print(json.dumps(newdep))
 
 
 
