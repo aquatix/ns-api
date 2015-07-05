@@ -1,7 +1,6 @@
 """
 Library to query the official Dutch railways API
 """
-
 import urllib2
 import time
 
@@ -9,6 +8,7 @@ from datetime import datetime, timedelta
 
 from pytz import timezone, utc
 from pytz.tzinfo import StaticTzInfo
+
 
 class OffsetTime(StaticTzInfo):
     def __init__(self, offset):
@@ -70,10 +70,21 @@ class Departure():
         return 'trip_number: ' + self.trip_number
 
 
+class TripStop():
+
+    def __init__(self, part_dict):
+        name = part_dict['Naam']
+        time = part_dict['Tijd']
+        platform = part_dict['Spoor']
+
+
 class TripSubpart():
 
     def __init__(self, part_dict):
         transporter = part_dict['Vervoerder']
+        transport_type = part_dict['VervoerType']
+        journey_id = part_dict['RitNummer']
+        status = part_dict['Status']
 
 
 class Trip():
@@ -82,7 +93,7 @@ class Trip():
         nr_transfers = trip_dict['AantalOverstappen']
         travel_time_planned = trip_dict['GeplandeReisTijd']
         travel_time_actual = trip_dict['ActueleReisTijd']
-        is_optimal = trip_dict['Optimaal']
+        is_optimal = True if trip_dict['Optimaal'] == 'true' else False
         status = trip_dict['Status']
 
         format = "%Y-%m-%dT%H:%M:%S%z"
