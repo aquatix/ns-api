@@ -81,10 +81,14 @@ class TripStop():
 class TripSubpart():
 
     def __init__(self, part_dict):
+        trip_type = part_dict['@reisSoort']
         transporter = part_dict['Vervoerder']
         transport_type = part_dict['VervoerType']
         journey_id = part_dict['RitNummer']
         status = part_dict['Status']
+
+    def __unicode__(self):
+        print trip_type
 
 
 class Trip():
@@ -124,10 +128,11 @@ class Trip():
 
         trip_parts = trip_dict['ReisDeel']
         print(trip_parts)
-        print 'wtf'
+        print '-------'
 
         trip_parts = []
         for part in trip_dict['ReisDeel']:
+            print(part)
             trip_part = TripSubpart(part)
             trip_parts.append(trip_part)
 
