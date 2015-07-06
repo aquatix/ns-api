@@ -1,8 +1,8 @@
 """
 Library to query the official Dutch railways API
 """
-import urllib2
-import urllib
+import requests
+from requests.auth import HTTPBasicAuth
 import xmltodict
 import time
 
@@ -87,15 +87,17 @@ class Station(BaseObject):
         self.lat = stat_dict['Lat']
         self.lon = stat_dict['Lon']
         self.synonyms = []
-        raw_synonyms = stat_dict['Synoniemen']['Synoniem']
-        print(type(raw_synonyms))
-        if isinstance(raw_synonyms, unicode):
-            raw_synonyms = [raw_synonyms]
-        for synonym in raw_synonyms:
-            self.synonyms.append(synonym)
+        try:
+            raw_synonyms = stat_dict['Synoniemen']['Synoniem']
+            if isinstance(raw_synonyms, unicode):
+                raw_synonyms = [raw_synonyms]
+            for synonym in raw_synonyms:
+                self.synonyms.append(synonym)
+        except TypeError:
+            self.synonyms = []
 
     def __unicode__(self):
-        return '<Station> {0} {1}'.format(self.code, self.names['long'])
+        return u'<Station> {0} {1}'.format(self.code, self.names['long'])
 
 
 class Departure(BaseObject):
@@ -142,7 +144,7 @@ class Departure(BaseObject):
             return None
 
     def __unicode__(self):
-        return '<Departure> trip_number: {0} {1} {2}'.format(self.trip_number, self.destination, self.departure_time)
+        return u'<Departure> trip_number: {0} {1} {2}'.format(self.trip_number, self.destination, self.departure_time)
 
 
 class TripRemark(BaseObject):
@@ -156,7 +158,7 @@ class TripRemark(BaseObject):
         self.text = part_dict['Text']
 
     def __unicode__(self):
-        return '<TripRemark> {0} {1}'.format(self.is_grave, self.text)
+        return u'<TripRemark> {0} {1}'.format(self.is_grave, self.text)
 
 
 class TripStop(BaseObject):
@@ -175,7 +177,7 @@ class TripStop(BaseObject):
         pass
 
     def __unicode__(self):
-        return '<TripStop> {0}'.format(self.name)
+        return u'<TripStop> {0}'.format(self.name)
 
 
 
@@ -201,7 +203,7 @@ class TripSubpart(BaseObject):
         pass
 
     def __unicode__(self):
-        return '<TripSubpart> [{0}] {1} {2} {3}'.format(self.going, self.journey_id, self.trip_type, self.status)
+        return u'<TripSubpart> [{0}] {1} {2} {3}'.format(self.going, self.journey_id, self.trip_type, self.status)
 
 
 class Trip(BaseObject):
@@ -318,91 +320,123 @@ class Trip(BaseObject):
         return self.__unicode__()
 
     def __unicode__(self):
-        return '<Trip> plan: {0} actual: {1} transfers: {2}'.format(self.departure_time_planned, self.departure_time_actual, self.nr_transfers)
+        return u'<Trip> plan: {0} actual: {1} transfers: {2}'.format(self.departure_time_planned, self.departure_time_actual, self.nr_transfers)
 
 
-def parse_departures(xml):
-    """
-    Parse the NS API xml result into Departure objects
-    @param xml: raw XML result from the NS API
-    """
-    obj = xmltodict.parse(xml)
-    departures = []
+class NSAPI(object):
 
-    for departure in obj['ActueleVertrekTijden']['VertrekkendeTrein']:
-        newdep = Departure(departure)
-        departures.append(newdep)
-        print('-- dep --')
-        print(newdep.__dict__)
-        print(newdep.to_json())
-        print(newdep.delay)
+    def __init__(self, username, apikey):
+        self.username = username
+        self.apikey = apikey
 
-    return departures
+    def _request(self, method, url, postdata=None, params=None):
+        headers = {"Accept": "application/xml",
+                   "Content-Type": "application/xml",
+                   "User-Agent": "ns_api"}
 
+        if postdata:
+            postdata = json.dumps(postdata)
 
-def get_departures(station):
-    """
-    Fetch the current departure times from this station
-    @param station: station to lookup
-    """
-    url = 'http://www.ns.nl/actuele-vertrektijden/main.action?xml=true'
-    user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
-    header = {'User-Agent' : user_agent}
+        r = requests.request(method,
+                             url,
+                             data=postdata,
+                             params=params,
+                             headers=headers,
+                             files=None,
+                             auth=HTTPBasicAuth(self.username, self.apikey))
 
-    values = {
-        'van_heen_station' : station,
-    }
-
-    data = urllib.urlencode(values)
-    req = urllib2.Request(url, data, header)
-    response = urllib2.urlopen(req)
-    page = response.read()
-    #soup = BeautifulSoup(page)
-    disruptions = []
+        r.raise_for_status()
+        return r.text
 
 
-def parse_trips(xml):
-    """
-    Parse the NS API xml result into Trip objects
-    """
-    obj = xmltodict.parse(xml)
-    trips = []
+    @classmethod
+    def parse_departures(xml):
+        """
+        Parse the NS API xml result into Departure objects
+        @param xml: raw XML result from the NS API
+        """
+        obj = xmltodict.parse(xml)
+        departures = []
 
-    for trip in obj['ReisMogelijkheden']['ReisMogelijkheid']:
-        newtrip = Trip(trip)
-        trips.append(newtrip)
-        print('-- trip --')
-        print(newtrip)
-        print(newtrip.__dict__)
-        print(newtrip.to_json())
-        print(newtrip.delay)
-        print('-- /trip --')
+        for departure in obj['ActueleVertrekTijden']['VertrekkendeTrein']:
+            newdep = Departure(departure)
+            departures.append(newdep)
+            print('-- dep --')
+            print(newdep.__dict__)
+            print(newdep.to_json())
+            print(newdep.delay)
 
-
-def get_trips(starttime, start, via, destination):
-    """
-    Fetch trip possibilities for these parameters
-    """
-    # TODO implement
-    pass
+        return departures
 
 
-def parse_stations(xml):
-    obj = xmltodict.parse(xml)
-    stations = []
+    def get_departures(self, station):
+        """
+        Fetch the current departure times from this station
+        @param station: station to lookup
+        """
+        url = 'http://www.ns.nl/actuele-vertrektijden/main.action?xml=true'
+        user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
+        header = {'User-Agent' : user_agent}
 
-    for station in obj['Stations']['Station']:
-        newstat = Station(station)
-        stations.append(newstat)
-        print(newstat)
-        print(newstat.__dict__)
-        print(newstat.to_json())
+        values = {
+            'van_heen_station' : station,
+        }
+
+        data = urllib.urlencode(values)
+        req = urllib2.Request(url, data, header)
+        response = urllib2.urlopen(req)
+        page = response.read()
+        #soup = BeautifulSoup(page)
+        disruptions = []
 
 
-def get_stations():
-    """
-    Fetch the list of stations
-    """
-    url = 'http://webservices.ns.nl/ns-api-stations-v2'
-    # TODO implement
+    @classmethod
+    def parse_trips(xml):
+        """
+        Parse the NS API xml result into Trip objects
+        """
+        obj = xmltodict.parse(xml)
+        trips = []
+
+        for trip in obj['ReisMogelijkheden']['ReisMogelijkheid']:
+            newtrip = Trip(trip)
+            trips.append(newtrip)
+            print('-- trip --')
+            print(newtrip)
+            print(newtrip.__dict__)
+            print(newtrip.to_json())
+            print(newtrip.delay)
+            print('-- /trip --')
+
+
+    def get_trips(self, starttime, start, via, destination):
+        """
+        Fetch trip possibilities for these parameters
+        """
+        # TODO implement
+        pass
+
+
+    def parse_stations(self, xml):
+        obj = xmltodict.parse(xml)
+        stations = []
+
+        for station in obj['Stations']['Station']:
+            print station
+            newstat = Station(station)
+            stations.append(newstat)
+            print(newstat.__dict__)
+            print(newstat.to_json())
+            print(newstat)
+
+
+    def get_stations(self):
+        """
+        Fetch the list of stations
+        """
+        url = 'http://webservices.ns.nl/ns-api-stations-v2'
+        # TODO implement
+        raw_stations = self._request('GET', url)
+        #print(raw_stations)
+        self.parse_stations(raw_stations)
 
