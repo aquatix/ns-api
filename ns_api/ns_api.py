@@ -69,6 +69,35 @@ class BaseObject(object):
         return self.__unicode__()
 
 
+class Station(BaseObject):
+    """
+    Information on a railway station
+    """
+
+    def __init__(self, stat_dict):
+        self.code = stat_dict['Code']
+        self.uic_code = stat_dict['UICCode']
+        self.stationtype = stat_dict['Type']
+        self.names = {
+                'short': stat_dict['Namen']['Kort'],
+                'middle': stat_dict['Namen']['Middel'],
+                'long': stat_dict['Namen']['Lang']
+                }
+        self.country = stat_dict['Land']
+        self.lat = stat_dict['Lat']
+        self.lon = stat_dict['Lon']
+        self.synonyms = []
+        raw_synonyms = stat_dict['Synoniemen']['Synoniem']
+        print(type(raw_synonyms))
+        if isinstance(raw_synonyms, unicode):
+            raw_synonyms = [raw_synonyms]
+        for synonym in raw_synonyms:
+            self.synonyms.append(synonym)
+
+    def __unicode__(self):
+        return '<Station> {0} {1}'.format(self.code, self.names['long'])
+
+
 class Departure(BaseObject):
     """
     Information on a departing train on a certain station
@@ -356,3 +385,24 @@ def get_trips(starttime, start, via, destination):
     """
     # TODO implement
     pass
+
+
+def parse_stations(xml):
+    obj = xmltodict.parse(xml)
+    stations = []
+
+    for station in obj['Stations']['Station']:
+        newstat = Station(station)
+        stations.append(newstat)
+        print(newstat)
+        print(newstat.__dict__)
+        print(newstat.to_json())
+
+
+def get_stations():
+    """
+    Fetch the list of stations
+    """
+    url = 'http://webservices.ns.nl/ns-api-stations-v2'
+    # TODO implement
+
