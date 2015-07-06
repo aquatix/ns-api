@@ -22,7 +22,6 @@ if __name__ == '__main__':
     """
     Notifier is ran standalone, rock and roll
     """
-    print("Run!")
 
     departures = []
     with open('examples.xml') as fd:

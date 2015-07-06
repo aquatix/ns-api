@@ -78,6 +78,23 @@ class Departure(object):
         except KeyError:
             self.remarks = []
 
+    def __getstate__(self):
+        result = self.__dict__.copy()
+        return result
+
+    def to_json(self):
+        """
+        Create a JSON representation of this model
+        """
+        return json.dumps(self.__getstate__())
+
+    def from_json(self, source_json):
+        """
+        Parse a JSON representation of this model back to, well, the model
+        """
+        # TODO implement
+        # json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
+        pass
 
     def __repr__(self):
         return self.__unicode__()
@@ -95,6 +112,14 @@ class TripStop(object):
         self.name = part_dict['Naam']
         self.time = part_dict['Tijd']
         self.platform = part_dict['Spoor']
+
+    def from_json(self, source_json):
+        """
+        Parse a JSON representation of this model back to, well, the model
+        """
+        # TODO implement
+        # json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
+        pass
 
     def __repr__(self):
         return self.__unicode__()
@@ -126,6 +151,14 @@ class TripSubpart(object):
         """
         return json.dumps(self.__getstate__())
 
+    def from_json(self, source_json):
+        """
+        Parse a JSON representation of this model back to, well, the model
+        """
+        # TODO implement
+        # json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
+        pass
+
     def __repr__(self):
         return self.__unicode__()
 
@@ -133,17 +166,23 @@ class TripSubpart(object):
         return self.__unicode__()
 
     def __unicode__(self):
-        return '<TripSubpart> {0}'.format(self.trip_type)
+        return '<TripSubpart> {0} {1} {2}'.format(self.journey_id, self.trip_type, self.status)
 
 
 class Trip(object):
 
     def __init__(self, trip_dict):
+        self.status = trip_dict['Status']
         self.nr_transfers = trip_dict['AantalOverstappen']
-        self.travel_time_planned = trip_dict['GeplandeReisTijd']
+        try:
+            self.travel_time_planned = trip_dict['GeplandeReisTijd']
+            self.going = True
+        except KeyError:
+            # Train has been cancelled
+            self.travel_time_planned = None
+            self.going = False
         self.travel_time_actual = trip_dict['ActueleReisTijd']
         self.is_optimal = True if trip_dict['Optimaal'] == 'true' else False
-        self.status = trip_dict['Status']
 
         dt_format = "%Y-%m-%dT%H:%M:%S%z"
 
@@ -176,7 +215,13 @@ class Trip(object):
         print '-------'
 
         self.trip_parts = []
-        for part in trip_dict['ReisDeel']:
+        print(type(trip_dict['ReisDeel']))
+        #if isinstance(trip_dict['ReisDeel'], collections.OrderedDict):
+        raw_parts = trip_dict['ReisDeel']
+        if isinstance(trip_dict['ReisDeel'], OrderedDict):
+            print('fuck yes')
+            raw_parts = [trip_dict['ReisDeel']]
+        for part in raw_parts:
             print('-- part --')
             print(part)
             print(type(part))
@@ -247,10 +292,9 @@ def parse_departures(xml):
     for departure in obj['ActueleVertrekTijden']['VertrekkendeTrein']:
         newdep = Departure(departure)
         departures.append(newdep)
-        print('-- departure --')
-        print(newdep)
+        print('-- dep --')
         print(newdep.__dict__)
-        print('-- /departure --')
+        print(newdep.to_json())
 
     return departures
 
