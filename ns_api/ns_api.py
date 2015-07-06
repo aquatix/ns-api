@@ -116,6 +116,16 @@ class TripSubpart(object):
         self.journey_id = part_dict['RitNummer']
         self.status = part_dict['Status']
 
+    def __getstate__(self):
+        result = self.__dict__.copy()
+        return result
+
+    def to_json(self):
+        """
+        Create a JSON representation of this model
+        """
+        return json.dumps(self.__getstate__())
+
     def __repr__(self):
         return self.__unicode__()
 
@@ -180,12 +190,25 @@ class Trip(object):
 
         print self.trip_parts
 
+    def __getstate__(self):
+        result = self.__dict__.copy()
+        result['departure_time_actual'] = result['departure_time_actual'].isoformat()
+        result['arrival_time_actual'] = result['arrival_time_actual'].isoformat()
+        result['departure_time_planned'] = result['departure_time_planned'].isoformat()
+        result['arrival_time_planned'] = result['arrival_time_planned'].isoformat()
+        trip_parts = []
+        for trip_part in result['trip_parts']:
+            trip_parts.append(trip_part.to_json())
+        result['trip_parts'] = trip_parts
+        return result
+
     def to_json(self):
         """
         Create a JSON representation of this model
         """
         # TODO implement
-        return json.dumps(OrderedDict(self.__dict__))
+        #return json.dumps(OrderedDict(self.__dict__))
+        return json.dumps(self.__getstate__())
 
     def from_json(self, source_json):
         """
@@ -266,6 +289,7 @@ def parse_trips(xml):
         print('-- trip --')
         print(newtrip)
         print(newtrip.__dict__)
+        print(newtrip.to_json())
         print('-- /trip --')
 
 
