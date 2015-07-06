@@ -28,30 +28,27 @@ if __name__ == '__main__':
     print("Run!")
 
     #with open('actuele_vertrektijden.xml') as fd:
-    with open('examples.xml') as fd:
-        obj = xmltodict.parse(fd.read())
-
+    #with open('examples.xml') as fd:
+    #    obj = xmltodict.parse(fd.read())
     departures = []
+    with open('examples.xml') as fd:
+        departures = ns_api.parse_departures(fd.read())
+
 
     #for departure in obj['ActueleVertrekTijden']:
     #    print departure['VertrekkendeTrein']
-    for departure in obj['ActueleVertrekTijden']['VertrekkendeTrein']:
-        #print departure
-        newdep = ns_api.Departure(departure)
-        departures.append(newdep)
-        print repr(newdep)
-        #print(json.dumps(newdep))
+    #for departure in obj['ActueleVertrekTijden']['VertrekkendeTrein']:
+    #    #print departure
+    #    newdep = ns_api.Departure(departure)
+    #    departures.append(newdep)
+    #    print repr(newdep)
+    #    #print(json.dumps(newdep))
 
 
 
-    with open('reismogelijkheden.xml') as fd:
-        obj = xmltodict.parse(fd.read())
-
+    #with open('reismogelijkheden.xml') as fd:
+    #    obj = xmltodict.parse(fd.read())
     trips = []
-
-    for trip in obj['ReisMogelijkheden']['ReisMogelijkheid']:
-        #print departure
-        newtrip = ns_api.Trip(trip)
-        trips.append(newtrip)
-        print repr(newtrip)
+    with open('reismogelijkheden.xml') as fd:
+        trips = ns_api.parse_trips(fd.read())
 

@@ -2,6 +2,7 @@
 Library to query the official Dutch railways API
 """
 import urllib2
+import xmltodict
 import time
 
 from datetime import datetime, timedelta
@@ -143,7 +144,19 @@ class Trip():
         return 'departure_time_planned: ' + self.departure_time_planned
 
 
-def get_departures(self, station):
+def parse_departures(xml):
+    obj = xmltodict.parse(xml)
+    departures = []
+
+    for departure in obj['ActueleVertrekTijden']['VertrekkendeTrein']:
+        newdep = Departure(departure)
+        departures.append(newdep)
+        print repr(newdep)
+
+    return departures
+
+
+def get_departures(station):
     url = 'http://www.ns.nl/actuele-vertrektijden/main.action?xml=true'
     user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
     header = { 'User-Agent' : user_agent }
@@ -159,3 +172,17 @@ def get_departures(self, station):
     soup = BeautifulSoup(page)
     disruptions = []
 
+
+def parse_trips(xml):
+    obj = xmltodict.parse(xml)
+    trips = []
+
+    for trip in obj['ReisMogelijkheden']['ReisMogelijkheid']:
+        #print departure
+        newtrip = Trip(trip)
+        trips.append(newtrip)
+        print repr(newtrip)
+
+
+def get_trips(start, via, destination):
+    pass
