@@ -42,7 +42,34 @@ def dump_datetime(value, dt_format):
     return value.strftime(dt_format)
 
 
-class Departure(object):
+class BaseObject(object):
+
+    def __getstate__(self):
+        result = self.__dict__.copy()
+        return result
+
+    def to_json(self):
+        """
+        Create a JSON representation of this model
+        """
+        return json.dumps(self.__getstate__())
+
+    def from_json(self, source_json):
+        """
+        Parse a JSON representation of this model back to, well, the model
+        """
+        # TODO implement
+        # json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
+        pass
+
+    def __repr__(self):
+        return self.__unicode__()
+
+    def __str__(self):
+        return self.__unicode__()
+
+
+class Departure(BaseObject):
     """
     Information on a departing train on a certain station
     """
@@ -78,35 +105,32 @@ class Departure(object):
         except KeyError:
             self.remarks = []
 
-    def __getstate__(self):
-        result = self.__dict__.copy()
-        return result
-
-    def to_json(self):
-        """
-        Create a JSON representation of this model
-        """
-        return json.dumps(self.__getstate__())
-
-    def from_json(self, source_json):
-        """
-        Parse a JSON representation of this model back to, well, the model
-        """
-        # TODO implement
-        # json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
-        pass
-
-    def __repr__(self):
-        return self.__unicode__()
-
-    def __str__(self):
-        return self.__unicode__()
+    @property
+    def delay(self):
+        if self.has_delay:
+            return self.departure_delay
+        else:
+            return None
 
     def __unicode__(self):
         return '<Departure> trip_number: {0} {1} {2}'.format(self.trip_number, self.destination, self.departure_time)
 
 
-class TripStop(object):
+class TripRemark(BaseObject):
+
+    def __init__(self, part_dict):
+        self.id = part_dict['Id']
+        if part_dict['Ernstig'] == 'false':
+            self.is_grave = False
+        else:
+            self.is_grave = True
+        self.text = part_dict['Text']
+
+    def __unicode__(self):
+        return '<TripRemark> {0} {1}'.format(self.is_grave, self.text)
+
+
+class TripStop(BaseObject):
 
     def __init__(self, part_dict):
         self.name = part_dict['Naam']
@@ -121,18 +145,12 @@ class TripStop(object):
         # json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
         pass
 
-    def __repr__(self):
-        return self.__unicode__()
-
-    def __str__(self):
-        return self.__unicode__()
-
     def __unicode__(self):
         return '<TripStop> {0}'.format(self.name)
 
 
 
-class TripSubpart(object):
+class TripSubpart(BaseObject):
 
     def __init__(self, part_dict):
         self.trip_type = part_dict['@reisSoort']
@@ -140,16 +158,10 @@ class TripSubpart(object):
         self.transport_type = part_dict['VervoerType']
         self.journey_id = part_dict['RitNummer']
         self.status = part_dict['Status']
-
-    def __getstate__(self):
-        result = self.__dict__.copy()
-        return result
-
-    def to_json(self):
-        """
-        Create a JSON representation of this model
-        """
-        return json.dumps(self.__getstate__())
+        if self.status == 'GEANNULEERD':
+            self.going = False
+        else:
+            self.going = True
 
     def from_json(self, source_json):
         """
@@ -159,17 +171,11 @@ class TripSubpart(object):
         # json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
         pass
 
-    def __repr__(self):
-        return self.__unicode__()
-
-    def __str__(self):
-        return self.__unicode__()
-
     def __unicode__(self):
-        return '<TripSubpart> {0} {1} {2}'.format(self.journey_id, self.trip_type, self.status)
+        return '<TripSubpart> [{0}] {1} {2} {3}'.format(self.going, self.journey_id, self.trip_type, self.status)
 
 
-class Trip(object):
+class Trip(BaseObject):
 
     def __init__(self, trip_dict):
         self.status = trip_dict['Status']
@@ -208,32 +214,33 @@ class Trip(object):
 
 
         trip_parts = trip_dict['ReisDeel']
-        print('-- trip_parts --')
-        print(trip_parts)
-        print '-------'
-        print(len(trip_parts))
-        print '-------'
 
         self.trip_parts = []
-        print(type(trip_dict['ReisDeel']))
-        #if isinstance(trip_dict['ReisDeel'], collections.OrderedDict):
         raw_parts = trip_dict['ReisDeel']
         if isinstance(trip_dict['ReisDeel'], OrderedDict):
-            print('fuck yes')
             raw_parts = [trip_dict['ReisDeel']]
         for part in raw_parts:
-            print('-- part --')
-            print(part)
-            print(type(part))
-            if isinstance(part, unicode):
-                # Only one item, make it a list
-                part = [part]
-                print part
-                print('-- /changed part --')
             trip_part = TripSubpart(part)
             self.trip_parts.append(trip_part)
 
-        print self.trip_parts
+        try:
+            raw_remarks = trip_dict['Melding']
+            self.trip_remarks = []
+            if isinstance(raw_remarks, OrderedDict):
+                raw_remarks = [raw_remarks]
+            for remark in raw_remarks:
+                trip_remark = TripRemark(remark)
+                self.trip_remarks.append(trip_remark)
+        except KeyError:
+            self.trip_remarks = []
+
+
+    @property
+    def delay(self):
+        if self.departure_time_actual > self.departure_time_planned:
+            return self.departure_time_actual - self.departure_time_planned
+        else:
+            return None
 
     def __getstate__(self):
         result = self.__dict__.copy()
@@ -245,6 +252,10 @@ class Trip(object):
         for trip_part in result['trip_parts']:
             trip_parts.append(trip_part.to_json())
         result['trip_parts'] = trip_parts
+        trip_remarks = []
+        for trip_remark in result['trip_remarks']:
+            trip_remarks.append(trip_remark.to_json())
+        result['trip_remarks'] = trip_remarks
         return result
 
     def to_json(self):
@@ -295,6 +306,7 @@ def parse_departures(xml):
         print('-- dep --')
         print(newdep.__dict__)
         print(newdep.to_json())
+        print(newdep.delay)
 
     return departures
 
@@ -334,6 +346,7 @@ def parse_trips(xml):
         print(newtrip)
         print(newtrip.__dict__)
         print(newtrip.to_json())
+        print(newtrip.delay)
         print('-- /trip --')
 
 
