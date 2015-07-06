@@ -79,8 +79,14 @@ class Departure(object):
             self.remarks = []
 
 
+    def __repr__(self):
+        return self.__unicode__()
+
+    def __str__(self):
+        return self.__unicode__()
+
     def __unicode__(self):
-        return 'trip_number: ' + self.trip_number
+        return '<Departure> trip_number: {0} {1} {2}'.format(self.trip_number, self.destination, self.departure_time)
 
 
 class TripStop(object):
@@ -89,6 +95,16 @@ class TripStop(object):
         self.name = part_dict['Naam']
         self.time = part_dict['Tijd']
         self.platform = part_dict['Spoor']
+
+    def __repr__(self):
+        return self.__unicode__()
+
+    def __str__(self):
+        return self.__unicode__()
+
+    def __unicode__(self):
+        return '<TripStop> {0}'.format(self.name)
+
 
 
 class TripSubpart(object):
@@ -100,9 +116,14 @@ class TripSubpart(object):
         self.journey_id = part_dict['RitNummer']
         self.status = part_dict['Status']
 
+    def __repr__(self):
+        return self.__unicode__()
+
+    def __str__(self):
+        return self.__unicode__()
+
     def __unicode__(self):
-        print self.trip_type
-        return self.trip_type
+        return '<TripSubpart> {0}'.format(self.trip_type)
 
 
 class Trip(object):
@@ -205,7 +226,6 @@ def parse_departures(xml):
         departures.append(newdep)
         print('-- departure --')
         print(newdep)
-        print repr(newdep)
         print(newdep.__dict__)
         print('-- /departure --')
 
@@ -241,11 +261,9 @@ def parse_trips(xml):
     trips = []
 
     for trip in obj['ReisMogelijkheden']['ReisMogelijkheid']:
-        #print departure
         newtrip = Trip(trip)
         trips.append(newtrip)
         print('-- trip --')
-        print repr(newtrip)
         print(newtrip)
         print(newtrip.__dict__)
         print('-- /trip --')
