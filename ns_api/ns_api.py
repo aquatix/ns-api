@@ -89,7 +89,8 @@ class TripSubpart():
         status = part_dict['Status']
 
     def __unicode__(self):
-        print trip_type
+        print self.trip_type
+        return self.trip_type
 
 
 class Trip():
@@ -103,13 +104,10 @@ class Trip():
 
         format = "%Y-%m-%dT%H:%M:%S%z"
 
-        #departure_time_planned = time.strptime(trip_dict['GeplandeVertrekTijd'], "%Y-%m-%dT%H:%M:%S%z")
         try:
-            #departure_time_planned = time.strptime(trip_dict['GeplandeVertrekTijd'], "")
             departure_time_planned = load_datetime(trip_dict['GeplandeVertrekTijd'], format)
         except:
             departure_time_planned = None
-        print departure_time_planned
 
         try:
             departure_time_actual = load_datetime(trip_dict['ActueleVertrekTijd'], format)
@@ -128,23 +126,50 @@ class Trip():
 
 
         trip_parts = trip_dict['ReisDeel']
+        print('-- trip_parts --')
         print(trip_parts)
+        print '-------'
+        print(len(trip_parts))
         print '-------'
 
         trip_parts = []
         for part in trip_dict['ReisDeel']:
+            print('-- part --')
             print(part)
+            print(type(part))
+            if isinstance(part, unicode):
+                # Only one item, make it a list
+                part = [part]
+                print part
+                print('-- /changed part --')
             trip_part = TripSubpart(part)
             trip_parts.append(trip_part)
 
         print trip_parts
 
+    def to_json(self):
+        """
+        Create a JSON representation of this model
+        """
+        # TODO implement
+        pass
+
+    def from_json(self):
+        """
+        Parse a JSON representation of this model back to, well, the model
+        """
+        # TODO implement
+        pass
 
     def __unicode__(self):
         return 'departure_time_planned: ' + self.departure_time_planned
 
 
 def parse_departures(xml):
+    """
+    Parse the NS API xml result into Departure objects
+    @param xml: raw XML result from the NS API
+    """
     obj = xmltodict.parse(xml)
     departures = []
 
@@ -157,6 +182,10 @@ def parse_departures(xml):
 
 
 def get_departures(station):
+    """
+    Fetch the current departure times from this station
+    @param station: station to lookup
+    """
     url = 'http://www.ns.nl/actuele-vertrektijden/main.action?xml=true'
     user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
     header = { 'User-Agent' : user_agent }
@@ -174,6 +203,9 @@ def get_departures(station):
 
 
 def parse_trips(xml):
+    """
+    Parse the NS API xml result into Trip objects
+    """
     obj = xmltodict.parse(xml)
     trips = []
 
@@ -184,5 +216,9 @@ def parse_trips(xml):
         print repr(newtrip)
 
 
-def get_trips(start, via, destination):
+def get_trips(starttime, start, via, destination):
+    """
+    Fetch trip possibilities for these parameters
+    """
+    # TODO implement
     pass
