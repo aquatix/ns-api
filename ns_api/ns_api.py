@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from pytz.tzinfo import StaticTzInfo
 
 import json
-from collections import OrderedDict
+import collections
 
 
 class OffsetTime(StaticTzInfo):
@@ -54,19 +54,25 @@ class BaseObject(object):
         """
         return json.dumps(self.__getstate__())
 
+    def __setstate__(self, source_dict):
+        self.__dict__ = source_dict
+
     def from_json(self, source_json):
         """
         Parse a JSON representation of this model back to, well, the model
         """
         # TODO implement
-        # json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
-        pass
+        source_dict = json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
+        self.__setstate__(source_dict)
 
     def __repr__(self):
         return self.__unicode__()
 
     def __str__(self):
         return self.__unicode__()
+
+    def __unicode__(self):
+        raise NotImplementedError('subclasses must override __unicode__()')
 
 
 class Station(BaseObject):
@@ -168,17 +174,8 @@ class TripStop(BaseObject):
         self.time = part_dict['Tijd']
         self.platform = part_dict['Spoor']
 
-    def from_json(self, source_json):
-        """
-        Parse a JSON representation of this model back to, well, the model
-        """
-        # TODO implement
-        # json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
-        pass
-
     def __unicode__(self):
         return u'<TripStop> {0}'.format(self.name)
-
 
 
 class TripSubpart(BaseObject):
@@ -193,14 +190,6 @@ class TripSubpart(BaseObject):
             self.going = False
         else:
             self.going = True
-
-    def from_json(self, source_json):
-        """
-        Parse a JSON representation of this model back to, well, the model
-        """
-        # TODO implement
-        # json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
-        pass
 
     def __unicode__(self):
         return u'<TripSubpart> [{0}] {1} {2} {3}'.format(self.going, self.journey_id, self.trip_type, self.status)
@@ -248,7 +237,7 @@ class Trip(BaseObject):
 
         self.trip_parts = []
         raw_parts = trip_dict['ReisDeel']
-        if isinstance(trip_dict['ReisDeel'], OrderedDict):
+        if isinstance(trip_dict['ReisDeel'], collections.OrderedDict):
             raw_parts = [trip_dict['ReisDeel']]
         for part in raw_parts:
             trip_part = TripSubpart(part)
@@ -257,7 +246,7 @@ class Trip(BaseObject):
         try:
             raw_remarks = trip_dict['Melding']
             self.trip_remarks = []
-            if isinstance(raw_remarks, OrderedDict):
+            if isinstance(raw_remarks, collections.OrderedDict):
                 raw_remarks = [raw_remarks]
             for remark in raw_remarks:
                 trip_remark = TripRemark(remark)
@@ -294,7 +283,7 @@ class Trip(BaseObject):
         Create a JSON representation of this model
         """
         # TODO implement
-        #return json.dumps(OrderedDict(self.__dict__))
+        #return json.dumps(collections.OrderedDict(self.__dict__))
         return json.dumps(self.__getstate__())
 
     def from_json(self, source_json):
@@ -311,13 +300,6 @@ class Trip(BaseObject):
         """
         # TODO implement
         pass
-
-    def __repr__(self):
-        #return 'Trip repr'
-        return self.__unicode__()
-
-    def __str__(self):
-        return self.__unicode__()
 
     def __unicode__(self):
         return u'<Trip> plan: {0} actual: {1} transfers: {2}'.format(self.departure_time_planned, self.departure_time_actual, self.nr_transfers)
