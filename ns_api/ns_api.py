@@ -61,7 +61,6 @@ class BaseObject(object):
         """
         Parse a JSON representation of this model back to, well, the model
         """
-        # TODO implement
         source_dict = json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
         self.__setstate__(source_dict)
 
@@ -85,10 +84,10 @@ class Station(BaseObject):
         self.uic_code = stat_dict['UICCode']
         self.stationtype = stat_dict['Type']
         self.names = {
-                'short': stat_dict['Namen']['Kort'],
-                'middle': stat_dict['Namen']['Middel'],
-                'long': stat_dict['Namen']['Lang']
-                }
+            'short': stat_dict['Namen']['Kort'],
+            'middle': stat_dict['Namen']['Middel'],
+            'long': stat_dict['Namen']['Lang']
+        }
         self.country = stat_dict['Land']
         self.lat = stat_dict['Lat']
         self.lon = stat_dict['Lon']
@@ -104,6 +103,38 @@ class Station(BaseObject):
 
     def __unicode__(self):
         return u'<Station> {0} {1}'.format(self.code, self.names['long'])
+
+
+class Disruption(BaseObject):
+    """
+    Planned and unplanned disruptions of the railroad traffic
+    """
+
+    def __init__(self, part_dict):
+        self.code = part_dict['Code']
+        self.line = part_dict['Traject']
+        self.reason = part_dict['Reden']
+        self.message = part_dict['Bericht']
+
+        try:
+            self.cause = part_dict['Oorzaak']
+        except KeyError:
+            self.cause = None
+
+        try:
+            self.delay_text = part_dict['Vertraging']
+        except KeyError:
+            self.delay_text = None
+
+        dt_format = "%Y-%m-%dT%H:%M:%S%z"
+
+        try:
+            self.datetime = load_datetime(part_dict['Datum'], dt_format)
+        except:
+            self.datetime = None
+
+    def __unicode__(self):
+        return u'<Disruption> {0}'.format(self.line)
 
 
 class Departure(BaseObject):
@@ -278,13 +309,8 @@ class Trip(BaseObject):
         result['trip_remarks'] = trip_remarks
         return result
 
-    def to_json(self):
-        """
-        Create a JSON representation of this model
-        """
-        # TODO implement
-        #return json.dumps(collections.OrderedDict(self.__dict__))
-        return json.dumps(self.__getstate__())
+    def __setstate__(self, source_dict):
+        self.__dict__ = source_dict
 
     def from_json(self, source_json):
         """
@@ -292,6 +318,7 @@ class Trip(BaseObject):
         """
         # TODO implement
         # json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
+        # self.__setstate__(source_dict)
         pass
 
     def delay_text(self):
@@ -407,9 +434,11 @@ class NSAPI(object):
             print station
             newstat = Station(station)
             stations.append(newstat)
-            print(newstat.__dict__)
+            #print(newstat.__dict__)
             print(newstat.to_json())
-            print(newstat)
+            #print(newstat)
+
+        print len(stations)
 
 
     def get_stations(self):
