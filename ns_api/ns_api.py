@@ -111,10 +111,14 @@ class Disruption(BaseObject):
     """
 
     def __init__(self, part_dict):
-        self.code = part_dict['Code']
+        self.id = part_dict['id']
         self.line = part_dict['Traject']
-        self.reason = part_dict['Reden']
         self.message = part_dict['Bericht']
+
+        try:
+            self.reason = part_dict['Reden']
+        except KeyError:
+            self.reason = None
 
         try:
             self.cause = part_dict['Oorzaak']
@@ -356,6 +360,33 @@ class NSAPI(object):
 
         r.raise_for_status()
         return r.text
+
+
+    def parse_disruptions(self, xml):
+        """
+        Parse the NS API xml result into Disruption objects
+        @param xml: raw XML result from the NS API
+        """
+        obj = xmltodict.parse(xml)
+        disruptions = {}
+        disruptions['unplanned'] = []
+        disruptions['planned'] = []
+
+        raw_disruptions = obj['Storingen']['Ongepland']['Storing']
+        if isinstance(raw_disruptions, collections.OrderedDict):
+            raw_disruptions = [raw_disruptions]
+        for disruption in raw_disruptions:
+            newdis = Disruption(disruption)
+            print(newdis.__dict__)
+            disruptions['unplanned'].append(newdis)
+
+        raw_disruptions = obj['Storingen']['Gepland']['Storing']
+        if isinstance(raw_disruptions, collections.OrderedDict):
+            raw_disruptions = [raw_disruptions]
+        for disruption in raw_disruptions:
+            newdis = Disruption(disruption)
+            print(newdis.__dict__)
+            disruptions['planned'].append(newdis)
 
 
     @classmethod
