@@ -389,8 +389,7 @@ class NSAPI(object):
             disruptions['planned'].append(newdis)
 
 
-    @classmethod
-    def parse_departures(xml):
+    def parse_departures(self, xml):
         """
         Parse the NS API xml result into Departure objects
         @param xml: raw XML result from the NS API
@@ -401,8 +400,8 @@ class NSAPI(object):
         for departure in obj['ActueleVertrekTijden']['VertrekkendeTrein']:
             newdep = Departure(departure)
             departures.append(newdep)
-            print('-- dep --')
-            print(newdep.__dict__)
+            #print('-- dep --')
+            #print(newdep.__dict__)
             print(newdep.to_json())
             print(newdep.delay)
 
@@ -415,23 +414,16 @@ class NSAPI(object):
         @param station: station to lookup
         """
         url = 'http://www.ns.nl/actuele-vertrektijden/main.action?xml=true'
-        user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
-        header = {'User-Agent' : user_agent}
 
         values = {
             'van_heen_station' : station,
         }
 
-        data = urllib.urlencode(values)
-        req = urllib2.Request(url, data, header)
-        response = urllib2.urlopen(req)
-        page = response.read()
-        #soup = BeautifulSoup(page)
-        disruptions = []
+        raw_departures = self._request('GET', url)
+        return self.parse_departures(raw_departures)
 
 
-    @classmethod
-    def parse_trips(xml):
+    def parse_trips(self, xml):
         """
         Parse the NS API xml result into Trip objects
         """
@@ -441,12 +433,14 @@ class NSAPI(object):
         for trip in obj['ReisMogelijkheden']['ReisMogelijkheid']:
             newtrip = Trip(trip)
             trips.append(newtrip)
-            print('-- trip --')
-            print(newtrip)
-            print(newtrip.__dict__)
+            #print('-- trip --')
+            #print(newtrip)
+            #print(newtrip.__dict__)
             print(newtrip.to_json())
             print(newtrip.delay)
-            print('-- /trip --')
+            #print('-- /trip --')
+
+        return trips
 
 
     def get_trips(self, starttime, start, via, destination):
@@ -462,14 +456,11 @@ class NSAPI(object):
         stations = []
 
         for station in obj['Stations']['Station']:
-            print station
             newstat = Station(station)
             stations.append(newstat)
-            #print(newstat.__dict__)
-            print(newstat.to_json())
-            #print(newstat)
 
         print len(stations)
+        return stations
 
 
     def get_stations(self):
@@ -477,8 +468,6 @@ class NSAPI(object):
         Fetch the list of stations
         """
         url = 'http://webservices.ns.nl/ns-api-stations-v2'
-        # TODO implement
         raw_stations = self._request('GET', url)
-        #print(raw_stations)
-        self.parse_stations(raw_stations)
+        return self.parse_stations(raw_stations)
 
