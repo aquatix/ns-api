@@ -64,6 +64,9 @@ class BaseObject(object):
         source_dict = json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
         self.__setstate__(source_dict)
 
+    def __eq__(self, other): 
+        return self.__dict__ == other.__dict__
+
     def __repr__(self):
         return self.__unicode__()
 
@@ -79,7 +82,10 @@ class Station(BaseObject):
     Information on a railway station
     """
 
-    def __init__(self, stat_dict):
+    def __init__(self, stat_dict=None):
+        if stat_dict is None:
+            return
+        self.id = stat_dict['Code']
         self.code = stat_dict['Code']
         self.uic_code = stat_dict['UICCode']
         self.stationtype = stat_dict['Type']
@@ -147,6 +153,7 @@ class Departure(BaseObject):
     """
 
     def __init__(self, departure_dict):
+        self.id = departure_dict['RitNummer'] + '_' + departure_dict['VertrekTijd']
         self.trip_number = departure_dict['RitNummer']
         self.departure_time = departure_dict['VertrekTijd']
         try:
@@ -205,6 +212,7 @@ class TripRemark(BaseObject):
 class TripStop(BaseObject):
 
     def __init__(self, part_dict):
+        #self.id = 
         self.name = part_dict['Naam']
         self.time = part_dict['Tijd']
         self.platform = part_dict['Spoor']
@@ -233,6 +241,7 @@ class TripSubpart(BaseObject):
 class Trip(BaseObject):
 
     def __init__(self, trip_dict):
+        # self.id = ??
         self.status = trip_dict['Status']
         self.nr_transfers = trip_dict['AantalOverstappen']
         try:
