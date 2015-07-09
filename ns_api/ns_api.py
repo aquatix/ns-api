@@ -42,6 +42,37 @@ def dump_datetime(value, dt_format):
     return value.strftime(dt_format)
 
 
+def list_to_json(source_list):
+    """
+    Serialise all the items in source_list to json
+    """
+    result = []
+    for item in source_list:
+        result.append(item.to_json())
+    return result
+
+
+def list_from_json(source_list):
+    """
+    Deserialise all the items in source_list from json
+    """
+    result = []
+    for item in source_list:
+        result.append(item.from_json())
+    return result
+
+
+def list_changes(list_a, list_b):
+    """
+    Return the items from list_b that differ from list_a
+    """
+    result = []
+    for item in list_b:
+        if not item in list_a:
+            result.append(item)
+    return result
+
+
 class BaseObject(object):
 
     def __getstate__(self):
@@ -64,7 +95,7 @@ class BaseObject(object):
         source_dict = json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
         self.__setstate__(source_dict)
 
-    def __eq__(self, other): 
+    def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
     def __repr__(self):
@@ -212,7 +243,7 @@ class TripRemark(BaseObject):
 class TripStop(BaseObject):
 
     def __init__(self, part_dict):
-        #self.id = 
+        #self.id =
         self.name = part_dict['Naam']
         self.time = part_dict['Tijd']
         self.platform = part_dict['Spoor']
@@ -386,7 +417,7 @@ class NSAPI(object):
             raw_disruptions = [raw_disruptions]
         for disruption in raw_disruptions:
             newdis = Disruption(disruption)
-            print(newdis.__dict__)
+            #print(newdis.__dict__)
             disruptions['unplanned'].append(newdis)
 
         raw_disruptions = obj['Storingen']['Gepland']['Storing']
@@ -394,8 +425,26 @@ class NSAPI(object):
             raw_disruptions = [raw_disruptions]
         for disruption in raw_disruptions:
             newdis = Disruption(disruption)
-            print(newdis.__dict__)
+            #print(newdis.__dict__)
             disruptions['planned'].append(newdis)
+        return disruptions
+
+
+    def get_disruptions(self, station=None, actual=True, unplanned=True):
+        """
+        Fetch the current disruptions, or even the planned ones
+        @param station: station to lookup
+        @param actual: only actual disruptions, or a
+
+        actuele storingen  (=ongeplande storingen + actuele werkzaamheden)
+        geplande werkzaamheden (=geplande werkzaamheden)
+        actuele storingen voor een gespecificeerd station (=ongeplande storingen + actuele werkzaamheden)
+        """
+        url = "http://webservices.ns.nl/ns-api-storingen?station=${Stationsnaam}&actual=${true or false}&unplanned=${true or false}"
+        url = "http://webservices.ns.nl/ns-api-storingen?actual=true&unplanned=true"
+
+        raw_disruptions = self._request('GET', url)
+        return self.parse_disruptions(raw_disruptions)
 
 
     def parse_departures(self, xml):
@@ -411,7 +460,7 @@ class NSAPI(object):
             departures.append(newdep)
             #print('-- dep --')
             #print(newdep.__dict__)
-            print(newdep.to_json())
+            #print(newdep.to_json())
             print(newdep.delay)
 
         return departures
