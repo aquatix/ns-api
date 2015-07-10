@@ -4,7 +4,7 @@ Library to query the official Dutch railways API
 import requests
 from requests.auth import HTTPBasicAuth
 import xmltodict
-import time
+#import time
 
 from datetime import datetime, timedelta
 
@@ -15,10 +15,10 @@ import collections
 
 
 class OffsetTime(StaticTzInfo):
+    """
+    A dumb timezone based on offset such as +0530, -0600, etc.
+    """
     def __init__(self, offset):
-        """
-        A dumb timezone based on offset such as +0530, -0600, etc.
-        """
         hours = int(offset[:3])
         minutes = int(offset[0] + offset[3:])
         self._utcoffset = timedelta(hours=hours, minutes=minutes)
@@ -74,6 +74,9 @@ def list_changes(list_a, list_b):
 
 
 class BaseObject(object):
+    """
+    Base object with useful functions
+    """
 
     def __getstate__(self):
         result = self.__dict__.copy()
@@ -116,7 +119,7 @@ class Station(BaseObject):
     def __init__(self, stat_dict=None):
         if stat_dict is None:
             return
-        self.id = stat_dict['Code']
+        self.key = stat_dict['Code']
         self.code = stat_dict['Code']
         self.uic_code = stat_dict['UICCode']
         self.stationtype = stat_dict['Type']
@@ -148,7 +151,7 @@ class Disruption(BaseObject):
     """
 
     def __init__(self, part_dict):
-        self.id = part_dict['id']
+        self.key = part_dict['id']
         self.line = part_dict['Traject']
         self.message = part_dict['Bericht']
 
@@ -184,7 +187,7 @@ class Departure(BaseObject):
     """
 
     def __init__(self, departure_dict):
-        self.id = departure_dict['RitNummer'] + '_' + departure_dict['VertrekTijd']
+        self.key = departure_dict['RitNummer'] + '_' + departure_dict['VertrekTijd']
         self.trip_number = departure_dict['RitNummer']
         self.departure_time = departure_dict['VertrekTijd']
         try:
@@ -217,6 +220,9 @@ class Departure(BaseObject):
 
     @property
     def delay(self):
+        """
+        Return the delay of the train for this instance
+        """
         if self.has_delay:
             return self.departure_delay
         else:
@@ -227,9 +233,12 @@ class Departure(BaseObject):
 
 
 class TripRemark(BaseObject):
+    """
+    Notes on this route, generally about disruptions
+    """
 
     def __init__(self, part_dict):
-        self.id = part_dict['Id']
+        self.key = part_dict['Id']
         if part_dict['Ernstig'] == 'false':
             self.is_grave = False
         else:
@@ -241,9 +250,12 @@ class TripRemark(BaseObject):
 
 
 class TripStop(BaseObject):
+    """
+    Information on a stop on a route (station, time, platform)
+    """
 
     def __init__(self, part_dict):
-        #self.id =
+        #self.key =
         self.name = part_dict['Naam']
         self.time = part_dict['Tijd']
         self.platform = part_dict['Spoor']
@@ -253,6 +265,9 @@ class TripStop(BaseObject):
 
 
 class TripSubpart(BaseObject):
+    """
+    Sub route; each part means a transfer
+    """
 
     def __init__(self, part_dict):
         self.trip_type = part_dict['@reisSoort']
@@ -270,9 +285,12 @@ class TripSubpart(BaseObject):
 
 
 class Trip(BaseObject):
+    """
+    Suggested route for the provided departure/destination combination
+    """
 
     def __init__(self, trip_dict):
-        # self.id = ??
+        # self.key = ??
         self.status = trip_dict['Status']
         self.nr_transfers = trip_dict['AantalOverstappen']
         try:
@@ -308,8 +326,6 @@ class Trip(BaseObject):
             self.arrival_time_actual = None
 
 
-        trip_parts = trip_dict['ReisDeel']
-
         self.trip_parts = []
         raw_parts = trip_dict['ReisDeel']
         if isinstance(trip_dict['ReisDeel'], collections.OrderedDict):
@@ -332,6 +348,9 @@ class Trip(BaseObject):
 
     @property
     def delay(self):
+        """
+        Return the delay of the train for this instance
+        """
         if self.departure_time_actual > self.departure_time_planned:
             return self.departure_time_actual - self.departure_time_planned
         else:
@@ -377,6 +396,10 @@ class Trip(BaseObject):
 
 
 class NSAPI(object):
+    """
+    NS API object
+    Library to query the official Dutch railways API
+    """
 
     def __init__(self, username, apikey):
         self.username = username
