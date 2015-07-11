@@ -435,21 +435,23 @@ class NSAPI(object):
         disruptions['unplanned'] = []
         disruptions['planned'] = []
 
-        raw_disruptions = obj['Storingen']['Ongepland']['Storing']
-        if isinstance(raw_disruptions, collections.OrderedDict):
-            raw_disruptions = [raw_disruptions]
-        for disruption in raw_disruptions:
-            newdis = Disruption(disruption)
-            #print(newdis.__dict__)
-            disruptions['unplanned'].append(newdis)
+        if obj['Storingen']['Ongepland']:
+            raw_disruptions = obj['Storingen']['Ongepland']['Storing']
+            if isinstance(raw_disruptions, collections.OrderedDict):
+                raw_disruptions = [raw_disruptions]
+            for disruption in raw_disruptions:
+                newdis = Disruption(disruption)
+                #print(newdis.__dict__)
+                disruptions['unplanned'].append(newdis)
 
-        raw_disruptions = obj['Storingen']['Gepland']['Storing']
-        if isinstance(raw_disruptions, collections.OrderedDict):
-            raw_disruptions = [raw_disruptions]
-        for disruption in raw_disruptions:
-            newdis = Disruption(disruption)
-            #print(newdis.__dict__)
-            disruptions['planned'].append(newdis)
+        if obj['Storingen']['Gepland']:
+            raw_disruptions = obj['Storingen']['Gepland']['Storing']
+            if isinstance(raw_disruptions, collections.OrderedDict):
+                raw_disruptions = [raw_disruptions]
+            for disruption in raw_disruptions:
+                newdis = Disruption(disruption)
+                #print(newdis.__dict__)
+                disruptions['planned'].append(newdis)
         return disruptions
 
 
