@@ -62,13 +62,24 @@ def list_from_json(source_list):
     return result
 
 
-def list_changes(list_a, list_b):
+def list_diff(list_a, list_b):
     """
     Return the items from list_b that differ from list_a
     """
     result = []
     for item in list_b:
         if not item in list_a:
+            result.append(item)
+    return result
+
+
+def list_same(list_a, list_b):
+    """
+    Return the items from list_b that are also on list_a
+    """
+    result = []
+    for item in list_b:
+        if item in list_a:
             result.append(item)
     return result
 
@@ -105,7 +116,7 @@ class BaseObject(object):
         return self.__unicode__()
 
     def __str__(self):
-        return self.__unicode__()
+        return unicode(self).encode('utf-8')
 
     def __unicode__(self):
         raise NotImplementedError('subclasses must override __unicode__()')
