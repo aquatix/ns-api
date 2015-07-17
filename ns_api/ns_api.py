@@ -522,25 +522,45 @@ class NSAPI(object):
         obj = xmltodict.parse(xml)
         trips = []
 
+        if 'error' in obj:
+            print 'Error in trips: ' + obj['error']['message']
+            return None
+
         for trip in obj['ReisMogelijkheden']['ReisMogelijkheid']:
             newtrip = Trip(trip)
             trips.append(newtrip)
             #print('-- trip --')
             #print(newtrip)
             #print(newtrip.__dict__)
-            print(newtrip.to_json())
-            print(newtrip.delay)
+            #print(newtrip.to_json())
+            #print(newtrip.delay)
             #print('-- /trip --')
 
         return trips
 
 
-    def get_trips(self, starttime, start, via, destination):
+    def get_trips(self, timestamp, start, via, destination, departure=True):
         """
         Fetch trip possibilities for these parameters
+        http://webservices.ns.nl/ns-api-treinplanner?<parameters>
+        fromStation
+        toStation
+        dateTime: 2012-02-21T15:50
+        departure: true for starting at timestamp, false for arriving at timestamp
         """
         # TODO implement
-        pass
+        url = 'http://webservices.ns.nl/ns-api-treinplanner?'
+        url = url + 'fromStation=' + start
+        url = url + '&toStation=' + destination
+        if via:
+            url = url + '&via=' + via
+        if len(timestamp) == 5:
+            # Format of HH:MM
+            timestamp = '2015-07-17T' + timestamp # FIXME
+        url = url + '&dateTime=' + timestamp
+        print url
+        raw_trips = self._request('GET', url)
+        return self.parse_trips(raw_trips)
 
 
     def parse_stations(self, xml):
