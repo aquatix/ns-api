@@ -189,7 +189,8 @@ class Disruption(BaseObject):
             self.datetime = None
 
     def __unicode__(self):
-        return u'<Disruption> {0}'.format(self.line)
+        #return u'<Disruption> {0}'.format(self.line)
+        return u'<Disruption> {0}'.format(self.key)
 
 
 class Departure(BaseObject):
@@ -505,13 +506,10 @@ class NSAPI(object):
     def get_departures(self, station):
         """
         Fetch the current departure times from this station
+        http://webservices.ns.nl/ns-api-avt?station=${Naam of afkorting Station}
         @param station: station to lookup
         """
-        url = 'http://www.ns.nl/actuele-vertrektijden/main.action?xml=true'
-
-        values = {
-            'van_heen_station' : station,
-        }
+        url = 'http://webservices.ns.nl/ns-api-avt?station=' + station
 
         raw_departures = self._request('GET', url)
         return self.parse_departures(raw_departures)
