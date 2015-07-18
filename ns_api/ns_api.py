@@ -9,6 +9,7 @@ import xmltodict
 from datetime import datetime, timedelta
 
 from pytz.tzinfo import StaticTzInfo
+import time
 
 import json
 import collections
@@ -192,9 +193,18 @@ class Disruption(BaseObject):
         dt_format = "%Y-%m-%dT%H:%M:%S%z"
 
         try:
-            self.datetime = load_datetime(part_dict['Datum'], dt_format)
+            self.timestamp = load_datetime(part_dict['Datum'], dt_format)
         except:
-            self.datetime = None
+            self.timestamp = None
+
+    def __getstate__(self):
+        result = self.__dict__.copy()
+        result['timestamp'] = result['timestamp'].isoformat()
+        return result
+
+    def __setstate__(self, source_dict):
+        # @TODO: datetime stamps
+        self.__dict__ = source_dict
 
     def __unicode__(self):
         #return u'<Disruption> {0}'.format(self.line)
@@ -303,11 +313,16 @@ class TripSubpart(BaseObject):
         self.transporter = part_dict['Vervoerder']
         self.transport_type = part_dict['VervoerType']
         self.journey_id = part_dict['RitNummer']
+
+        # VOLGENS-PLAN, GEANNULEERD (=vervallen trein), GEWIJZIGD (=planaanpassing in de bijsturing op de dag zelf),
+        # OVERSTAP-NIET-MOGELIJK, VERTRAAGD, NIEUW (=extra trein)
         self.status = part_dict['Status']
+        self.going = True
+        self.has_delay = False
         if self.status == 'GEANNULEERD':
             self.going = False
-        else:
-            self.going = True
+        if self.status == 'GEANNULEERD' or self.status == 'GEWIJZIGD' or self.status == 'VERTRAAGD':
+            self.has_delay = True
 
     def __unicode__(self):
         return u'<TripSubpart> [{0}] {1} {2} {3}'.format(self.going, self.journey_id, self.trip_type, self.status)
@@ -320,7 +335,13 @@ class Trip(BaseObject):
 
     def __init__(self, trip_dict):
         # self.key = ??
-        self.status = trip_dict['Status']
+
+        try:
+            # VOLGENS-PLAN, GEWIJZIGD, VERTRAAGD, NIEUW, NIET-OPTIMAAL, NIET-MOGELIJK, PLAN-GEWIJZIGD
+            self.status = trip_dict['Status']
+        except KeyError:
+            self.status = None
+
         self.nr_transfers = trip_dict['AantalOverstappen']
         try:
             self.travel_time_planned = trip_dict['GeplandeReisTijd']
@@ -380,10 +401,13 @@ class Trip(BaseObject):
         """
         Return the delay of the train for this instance
         """
+        delay = {'departure_time': None, 'remarks': self.remarks, 'parts': []}
         if self.departure_time_actual > self.departure_time_planned:
-            return self.departure_time_actual - self.departure_time_planned
-        else:
-            return None
+            delay['departure_time'] = self.departure_time_actual - self.departure_time_planned
+        for part in self.trip_parts:
+            if part.has_delay:
+                delay['parts'].append(part)
+        return delay
 
     def __getstate__(self):
         result = self.__dict__.copy()
@@ -567,16 +591,16 @@ class NSAPI(object):
         dateTime: 2012-02-21T15:50
         departure: true for starting at timestamp, false for arriving at timestamp
         previousAdvices
+        nextAdvices
         """
-        # TODO implement
         url = 'http://webservices.ns.nl/ns-api-treinplanner?'
         url = url + 'fromStation=' + start
         url = url + '&toStation=' + destination
         if via:
             url = url + '&via=' + via
         if len(timestamp) == 5:
-            # Format of HH:MM
-            timestamp = '2015-07-17T' + timestamp # FIXME
+            # Format of HH:MM - api needs yyyy-mm-ddThh:mm
+            timestamp = time.strftime("%Y-%m-%d") + 'T' + timestamp
         url = url + '&previousAdvices=' + str(prev_advices)
         url = url + '&nextAdvices=' + str(next_advices)
         url = url + '&dateTime=' + timestamp
