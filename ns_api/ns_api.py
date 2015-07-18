@@ -14,6 +14,8 @@ import json
 import collections
 
 
+## Date/time helpers
+
 class OffsetTime(StaticTzInfo):
     """
     A dumb timezone based on offset such as +0530, -0600, etc.
@@ -22,6 +24,7 @@ class OffsetTime(StaticTzInfo):
         hours = int(offset[:3])
         minutes = int(offset[0] + offset[3:])
         self._utcoffset = timedelta(hours=hours, minutes=minutes)
+
 
 def load_datetime(value, dt_format):
     """
@@ -35,12 +38,15 @@ def load_datetime(value, dt_format):
 
     return datetime.strptime(value, dt_format)
 
+
 def dump_datetime(value, dt_format):
     """
     Format datetime object to string
     """
     return value.strftime(dt_format)
 
+
+## List helpers
 
 def list_to_json(source_list):
     """
@@ -83,6 +89,8 @@ def list_same(list_a, list_b):
             result.append(item)
     return result
 
+
+## NS API objects
 
 class BaseObject(object):
     """
@@ -229,6 +237,15 @@ class Departure(BaseObject):
             self.remarks = departure_dict = ['Opmerkingen']
         except KeyError:
             self.remarks = []
+
+    def __getstate__(self):
+        result = self.__dict__.copy()
+        result['departure_time'] = result['departure_time'].isoformat()
+        return result
+
+    def __setstate__(self, source_dict):
+        # @TODO: datetime stamps
+        self.__dict__ = source_dict
 
     @property
     def delay(self):
@@ -385,16 +402,8 @@ class Trip(BaseObject):
         return result
 
     def __setstate__(self, source_dict):
+        # @TODO: datetime stamps
         self.__dict__ = source_dict
-
-    def from_json(self, source_json):
-        """
-        Parse a JSON representation of this model back to, well, the model
-        """
-        # TODO implement
-        # json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
-        # self.__setstate__(source_dict)
-        pass
 
     def delay_text(self):
         """
@@ -402,6 +411,16 @@ class Trip(BaseObject):
         """
         # TODO implement
         pass
+
+    @classmethod
+    def get_optimal(cls, trip_list, time):
+        """
+        Look for the optimal trip in the list
+        """
+        for trip in trip_list:
+            if trip.is_optimal:
+                return trip
+        return None
 
     def __unicode__(self):
         return u'<Trip> plan: {0} actual: {1} transfers: {2}'.format(self.departure_time_planned, self.departure_time_actual, self.nr_transfers)
@@ -539,7 +558,7 @@ class NSAPI(object):
         return trips
 
 
-    def get_trips(self, timestamp, start, via, destination, departure=True):
+    def get_trips(self, timestamp, start, via, destination, departure=True, prev_advices=1, next_advices=1):
         """
         Fetch trip possibilities for these parameters
         http://webservices.ns.nl/ns-api-treinplanner?<parameters>
@@ -547,6 +566,7 @@ class NSAPI(object):
         toStation
         dateTime: 2012-02-21T15:50
         departure: true for starting at timestamp, false for arriving at timestamp
+        previousAdvices
         """
         # TODO implement
         url = 'http://webservices.ns.nl/ns-api-treinplanner?'
@@ -557,6 +577,8 @@ class NSAPI(object):
         if len(timestamp) == 5:
             # Format of HH:MM
             timestamp = '2015-07-17T' + timestamp # FIXME
+        url = url + '&previousAdvices=' + str(prev_advices)
+        url = url + '&nextAdvices=' + str(next_advices)
         url = url + '&dateTime=' + timestamp
         print url
         raw_trips = self._request('GET', url)
