@@ -59,13 +59,21 @@ def list_to_json(source_list):
     return result
 
 
-def list_from_json(source_list):
+def list_from_json(source_list_json):
     """
     Deserialise all the items in source_list from json
     """
     result = []
+    print source_list_json
+    if source_list_json == []:
+        return result
+    #source_list = json.loads(source_list_json[0])
+    source_list = json.loads(source_list_json)
+    print source_list
     for item in source_list:
-        result.append(item.from_json())
+        if item['class_name'] == 'Trip':
+            temp = Trip()
+            result.append(temp.from_json(item))
     return result
 
 
@@ -100,6 +108,7 @@ class BaseObject(object):
 
     def __getstate__(self):
         result = self.__dict__.copy()
+        result['class_name'] = self.__class__.__name__
         return result
 
     def to_json(self):
@@ -109,6 +118,7 @@ class BaseObject(object):
         return json.dumps(self.__getstate__())
 
     def __setstate__(self, source_dict):
+        source_dict.remove('class_name')
         self.__dict__ = source_dict
 
     def from_json(self, source_json):
@@ -198,13 +208,14 @@ class Disruption(BaseObject):
             self.timestamp = None
 
     def __getstate__(self):
-        result = self.__dict__.copy()
+        result = super(Disruption, self).__getstate__()
+        #result = self.__dict__.copy()
         result['timestamp'] = result['timestamp'].isoformat()
         return result
 
     def __setstate__(self, source_dict):
+        super(Disruption, self).__setstate__(source_dict)
         # @TODO: datetime stamps
-        self.__dict__ = source_dict
 
     def __unicode__(self):
         #return u'<Disruption> {0}'.format(self.line)
@@ -410,7 +421,8 @@ class Trip(BaseObject):
         return delay
 
     def __getstate__(self):
-        result = self.__dict__.copy()
+        result = super(Trip, self).__getstate__()
+        #result = self.__dict__.copy()
         result['departure_time_actual'] = result['departure_time_actual'].isoformat()
         result['arrival_time_actual'] = result['arrival_time_actual'].isoformat()
         result['departure_time_planned'] = result['departure_time_planned'].isoformat()
@@ -426,8 +438,8 @@ class Trip(BaseObject):
         return result
 
     def __setstate__(self, source_dict):
+        super(Disruption, self).__setstate__(source_dict)
         # @TODO: datetime stamps
-        self.__dict__ = source_dict
 
     def delay_text(self):
         """
