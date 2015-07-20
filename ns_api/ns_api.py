@@ -67,13 +67,27 @@ def list_from_json(source_list_json):
     print source_list_json
     if source_list_json == []:
         return result
-    #source_list = json.loads(source_list_json[0])
-    source_list = json.loads(source_list_json)
-    print source_list
-    for item in source_list:
+    for list_item in source_list_json:
+        item = json.loads(list_item)
         if item['class_name'] == 'Trip':
             temp = Trip()
-            result.append(temp.from_json(item))
+        elif item['class_name'] == 'Departure':
+            temp = Departure()
+        elif item['class_name'] == 'Disruption':
+            temp = Disruption()
+        elif item['class_name'] == 'Station':
+            temp = Station()
+        elif item['class_name'] == 'Trip':
+            temp = Trip()
+        elif item['class_name'] == 'TripRemark':
+            temp = TripRemark()
+        elif item['class_name'] == 'TripStop':
+            temp = TripStop()
+        elif item['class_name'] == 'TripSubpart':
+            temp = TripSubpart()
+        temp.from_json(list_item)
+        result.append(temp)
+    print result
     return result
 
 
@@ -118,7 +132,7 @@ class BaseObject(object):
         return json.dumps(self.__getstate__())
 
     def __setstate__(self, source_dict):
-        source_dict.remove('class_name')
+        del source_dict['class_name']
         self.__dict__ = source_dict
 
     def from_json(self, source_json):
@@ -180,7 +194,9 @@ class Disruption(BaseObject):
     Planned and unplanned disruptions of the railroad traffic
     """
 
-    def __init__(self, part_dict):
+    def __init__(self, part_dict=None):
+        if part_dict is None:
+            return
         self.key = part_dict['id']
         self.line = part_dict['Traject']
         self.message = part_dict['Bericht']
@@ -227,7 +243,9 @@ class Departure(BaseObject):
     Information on a departing train on a certain station
     """
 
-    def __init__(self, departure_dict):
+    def __init__(self, departure_dict=None):
+        if departure_dict is None:
+            return
         self.key = departure_dict['RitNummer'] + '_' + departure_dict['VertrekTijd']
         self.trip_number = departure_dict['RitNummer']
         self.departure_time = departure_dict['VertrekTijd']
@@ -287,7 +305,9 @@ class TripRemark(BaseObject):
     Notes on this route, generally about disruptions
     """
 
-    def __init__(self, part_dict):
+    def __init__(self, part_dict=None):
+        if part_dict is None:
+            return
         self.key = part_dict['Id']
         if part_dict['Ernstig'] == 'false':
             self.is_grave = False
@@ -304,7 +324,9 @@ class TripStop(BaseObject):
     Information on a stop on a route (station, time, platform)
     """
 
-    def __init__(self, part_dict):
+    def __init__(self, part_dict=None):
+        if part_dict is None:
+            return
         #self.key =
         self.name = part_dict['Naam']
         self.time = part_dict['Tijd']
@@ -319,7 +341,9 @@ class TripSubpart(BaseObject):
     Sub route; each part means a transfer
     """
 
-    def __init__(self, part_dict):
+    def __init__(self, part_dict=None):
+        if part_dict is None:
+            return
         self.trip_type = part_dict['@reisSoort']
         self.transporter = part_dict['Vervoerder']
         self.transport_type = part_dict['VervoerType']
@@ -344,7 +368,9 @@ class Trip(BaseObject):
     Suggested route for the provided departure/destination combination
     """
 
-    def __init__(self, trip_dict):
+    def __init__(self, trip_dict=None):
+        if trip_dict is None:
+            return
         # self.key = ??
 
         try:
