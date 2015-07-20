@@ -16,6 +16,7 @@ import collections
 
 
 ## Date/time helpers
+NS_DATETIME = "%Y-%m-%dT%H:%M:%S%z"
 
 class OffsetTime(StaticTzInfo):
     """
@@ -45,6 +46,10 @@ def dump_datetime(value, dt_format):
     Format datetime object to string
     """
     return value.strftime(dt_format)
+
+
+def simple_time(value):
+    return dump_datetime(value, '%H:%M')
 
 
 ## List helpers
@@ -135,6 +140,9 @@ class BaseObject(object):
         return json.dumps(self.__getstate__())
 
     def __setstate__(self, source_dict):
+        if not source_dict:
+            # Somehow the source is None
+            return
         del source_dict['class_name']
         self.__dict__ = source_dict
 
@@ -219,10 +227,8 @@ class Disruption(BaseObject):
         except KeyError:
             self.delay_text = None
 
-        dt_format = "%Y-%m-%dT%H:%M:%S%z"
-
         try:
-            self.timestamp = load_datetime(part_dict['Datum'], dt_format)
+            self.timestamp = load_datetime(part_dict['Datum'], NS_DATETIME)
         except:
             self.timestamp = None
 
@@ -281,7 +287,7 @@ class Departure(BaseObject):
             self.remarks = []
 
     def __getstate__(self):
-        result = self.__dict__.copy()
+        result = super(Departure, self).__getstate__()
         result['departure_time'] = result['departure_time'].isoformat()
         return result
 
@@ -330,9 +336,10 @@ class TripStop(BaseObject):
     def __init__(self, part_dict=None):
         if part_dict is None:
             return
-        #self.key =
         self.name = part_dict['Naam']
-        self.time = part_dict['Tijd']
+        dt_format = "%Y-%m-%dT%H:%M:%S%z"
+        self.time = load_datetime(part_dict['Tijd'], dt_format)
+        self.key = simple_time(self.time) + '_' + self.name
         self.platform_changed = False
         try:
             self.platform = part_dict['Spoor']
@@ -340,6 +347,11 @@ class TripStop(BaseObject):
                 self.platform_changed = True
         except KeyError:
             self.platform = None
+
+    def __getstate__(self):
+        result = super(TripStop, self).__getstate__()
+        result['time'] = result['time'].isoformat()
+        return result
 
     def __unicode__(self):
         return u'<TripStop> {0}'.format(self.name)
@@ -380,18 +392,28 @@ class TripSubpart(BaseObject):
             stop = TripStop(raw_stop)
             self.stops.append(stop)
 
+    @property
+    def destination(self):
+        return self.stops[-1].name
+
+    @property
+    def departure_time(self):
+        return self.stops[0].time
+
+
     def __getstate__(self):
         result = super(TripSubpart, self).__getstate__()
         stops = []
         for stop in self.stops:
             stops.append(stop.to_json())
         result['stops'] = stops
+        return result
 
     def __setstate__(self, source_dict):
         super(TripSubpart, self).__setstate__(source_dict)
 
     def __unicode__(self):
-        return u'<TripSubpart> [{0}] {1} {2} {3}'.format(self.going, self.journey_id, self.trip_type, self.status)
+        return u'<TripSubpart> [{0}] {1} {2} {3} {4}'.format(self.going, self.journey_id, self.trip_type, self.transport_type, self.status)
 
 
 class Trip(BaseObject):
@@ -399,7 +421,7 @@ class Trip(BaseObject):
     Suggested route for the provided departure/destination combination
     """
 
-    def __init__(self, trip_dict=None):
+    def __init__(self, trip_dict=None, datetime=None):
         if trip_dict is None:
             return
         # self.key = ??
@@ -422,6 +444,8 @@ class Trip(BaseObject):
         self.is_optimal = True if trip_dict['Optimaal'] == 'true' else False
 
         dt_format = "%Y-%m-%dT%H:%M:%S%z"
+
+        self.requested_time = datetime
 
         try:
             self.departure_time_planned = load_datetime(trip_dict['GeplandeVertrekTijd'], dt_format)
@@ -465,13 +489,25 @@ class Trip(BaseObject):
 
 
     @property
+    def departure(self):
+        return self.trip_parts[0].stops[0].name
+
+    @property
+    def destination(self):
+        return self.trip_parts[-1].stops[-1].name
+
+    @property
     def delay(self):
         """
         Return the delay of the train for this instance
         """
-        delay = {'departure_time': None, 'remarks': self.trip_remarks, 'parts': []}
+        delay = {'departure_time': None, 'departure_delay': None, 'requested_differs': None,
+                'remarks': self.trip_remarks, 'parts': []}
         if self.departure_time_actual > self.departure_time_planned:
-            delay['departure_time'] = self.departure_time_actual - self.departure_time_planned
+            delay['departure_delay'] = self.departure_time_actual - self.departure_time_planned
+            delay['departure_time'] = self.departure_time_actual
+        if self.requested_time != self.departure_time_actual:
+            delay['requested_differs'] = self.departure_time_actual
         for part in self.trip_parts:
             if part.has_delay:
                 delay['parts'].append(part)
@@ -484,11 +520,13 @@ class Trip(BaseObject):
         for subpart in self.trip_parts:
             if subpart.has_delay:
                 return True
+        if self.requested_time != self.departure_time_actual:
+            return True
         return False
 
     def __getstate__(self):
         result = super(Trip, self).__getstate__()
-        #result = self.__dict__.copy()
+        result['requested_time'] = result['requested_time'].isoformat()
         result['departure_time_actual'] = result['departure_time_actual'].isoformat()
         result['arrival_time_actual'] = result['arrival_time_actual'].isoformat()
         result['departure_time_planned'] = result['departure_time_planned'].isoformat()
@@ -505,6 +543,12 @@ class Trip(BaseObject):
 
     def __setstate__(self, source_dict):
         super(Trip, self).__setstate__(source_dict)
+        dt_format = "%Y-%m-%dT%H:%M:%S%z"
+
+        try:
+            self.departure_time_planned = load_datetime(self.departure_time_planned, dt_format)
+        except:
+            self.departure_time_planned = None
         # TripSubpart deserialisation
         trip_parts = []
         subparts = self.trip_parts
@@ -516,9 +560,9 @@ class Trip(BaseObject):
         # TripRemark deserialisation
         trip_remarks = []
         remarks = self.trip_remarks
-        for remark in remarks:
+        for raw_remark in remarks:
             remark = TripRemark()
-            remark.from_json(remark)
+            remark.from_json(raw_remark)
             trip_remarks.append(remark)
         self.trip_remarks = trip_remarks
         # @TODO: datetime stamps
@@ -652,7 +696,7 @@ class NSAPI(object):
         return self.parse_departures(raw_departures)
 
 
-    def parse_trips(self, xml):
+    def parse_trips(self, xml, requested_time):
         """
         Parse the NS API xml result into Trip objects
         """
@@ -664,7 +708,7 @@ class NSAPI(object):
             return None
 
         for trip in obj['ReisMogelijkheden']['ReisMogelijkheid']:
-            newtrip = Trip(trip)
+            newtrip = Trip(trip, requested_time)
             trips.append(newtrip)
             #print('-- trip --')
             #print(newtrip)
@@ -695,11 +739,18 @@ class NSAPI(object):
         if len(timestamp) == 5:
             # Format of HH:MM - api needs yyyy-mm-ddThh:mm
             timestamp = time.strftime("%Y-%m-%d") + 'T' + timestamp
+            #requested_time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M")
+            # TODO: DST/normal time
+            requested_time = load_datetime(timestamp + '+0200', "%Y-%m-%dT%H:%M%z")
+        else:
+            #requested_time = datetime.strptime(timestamp, "%d-%m-%Y %H:%M")
+            requested_time = load_datetime(timestamp + '+0200', "%d-%m-%Y %H:%M%z")
+            timestamp = datetime.strptime(timestamp, "%d-%m-%Y %H:%M").strftime("%Y-%m-%dT%H:%M")
         url = url + '&previousAdvices=' + str(prev_advices)
         url = url + '&nextAdvices=' + str(next_advices)
         url = url + '&dateTime=' + timestamp
         raw_trips = self._request('GET', url)
-        return self.parse_trips(raw_trips)
+        return self.parse_trips(raw_trips, requested_time)
 
 
     def parse_stations(self, xml):
