@@ -69,9 +69,7 @@ def list_from_json(source_list_json):
     for list_item in source_list_json:
         item = json.loads(list_item)
         try:
-            if item['class_name'] == 'Trip':
-                temp = Trip()
-            elif item['class_name'] == 'Departure':
+            if item['class_name'] == 'Departure':
                 temp = Departure()
             elif item['class_name'] == 'Disruption':
                 temp = Disruption()
@@ -288,8 +286,8 @@ class Departure(BaseObject):
         return result
 
     def __setstate__(self, source_dict):
+        super(Departure, self).__setstate__(source_dict)
         # @TODO: datetime stamps
-        self.__dict__ = source_dict
 
     @property
     def delay(self):
@@ -363,6 +361,9 @@ class TripSubpart(BaseObject):
             self.going = False
         if self.status == 'GEANNULEERD' or self.status == 'GEWIJZIGD' or self.status == 'VERTRAAGD':
             self.has_delay = True
+
+    def __setstate__(self, source_dict):
+        super(TripSubpart, self).__setstate__(source_dict)
 
     def __unicode__(self):
         return u'<TripSubpart> [{0}] {1} {2} {3}'.format(self.going, self.journey_id, self.trip_type, self.status)
@@ -478,7 +479,23 @@ class Trip(BaseObject):
         return result
 
     def __setstate__(self, source_dict):
-        super(Disruption, self).__setstate__(source_dict)
+        super(Trip, self).__setstate__(source_dict)
+        # TripSubpart deserialisation
+        trip_parts = []
+        subparts = self.trip_parts
+        for part in subparts:
+            subpart = TripSubpart()
+            subpart.from_json(part)
+            trip_parts.append(subpart)
+        self.trip_parts = trip_parts
+        # TripRemark deserialisation
+        trip_remarks = []
+        remarks = self.trip_remarks
+        for remark in remarks:
+            remark = TripRemark()
+            remark.from_json(remark)
+            trip_remarks.append(remark)
+        self.trip_remarks = trip_remarks
         # @TODO: datetime stamps
 
     def delay_text(self):
