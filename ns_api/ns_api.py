@@ -451,6 +451,15 @@ class Trip(BaseObject):
                 delay['parts'].append(part)
         return delay
 
+    @property
+    def has_delay(self):
+        if self.status != 'VOLGENS-PLAN':
+            return True
+        for subpart in self.trip_parts:
+            if subpart.has_delay:
+                return True
+        return False
+
     def __getstate__(self):
         result = super(Trip, self).__getstate__()
         #result = self.__dict__.copy()
@@ -490,7 +499,7 @@ class Trip(BaseObject):
         return None
 
     def __unicode__(self):
-        return u'<Trip> plan: {0} actual: {1} transfers: {2}'.format(self.departure_time_planned, self.departure_time_actual, self.nr_transfers)
+        return u'<Trip> {0} plan: {1} actual: {2} transfers: {3}'.format(self.has_delay, self.departure_time_planned, self.departure_time_actual, self.nr_transfers)
 
 
 class NSAPI(object):
@@ -647,7 +656,6 @@ class NSAPI(object):
         url = url + '&previousAdvices=' + str(prev_advices)
         url = url + '&nextAdvices=' + str(next_advices)
         url = url + '&dateTime=' + timestamp
-        print url
         raw_trips = self._request('GET', url)
         return self.parse_trips(raw_trips)
 
