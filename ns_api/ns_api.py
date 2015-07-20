@@ -333,7 +333,13 @@ class TripStop(BaseObject):
         #self.key =
         self.name = part_dict['Naam']
         self.time = part_dict['Tijd']
-        self.platform = part_dict['Spoor']
+        self.platform_changed = False
+        try:
+            self.platform = part_dict['Spoor']
+            if part_dict['Spoor']['@wijziging'] == 'true':
+                self.platform_changed = True
+        except KeyError:
+            self.platform = None
 
     def __unicode__(self):
         return u'<TripStop> {0}'.format(self.name)
@@ -361,6 +367,25 @@ class TripSubpart(BaseObject):
             self.going = False
         if self.status == 'GEANNULEERD' or self.status == 'GEWIJZIGD' or self.status == 'VERTRAAGD':
             self.has_delay = True
+
+        try:
+            self.disruption_key = part_dict['OngeplandeStoringId']
+        except KeyError:
+            self.disruption_key = None
+
+
+        self.stops = []
+        raw_stops = part_dict['ReisStop']
+        for raw_stop in raw_stops:
+            stop = TripStop(raw_stop)
+            self.stops.append(stop)
+
+    def __getstate__(self):
+        result = super(TripSubpart, self).__getstate__()
+        stops = []
+        for stop in self.stops:
+            stops.append(stop.to_json())
+        result['stops'] = stops
 
     def __setstate__(self, source_dict):
         super(TripSubpart, self).__setstate__(source_dict)
@@ -444,7 +469,7 @@ class Trip(BaseObject):
         """
         Return the delay of the train for this instance
         """
-        delay = {'departure_time': None, 'remarks': self.remarks, 'parts': []}
+        delay = {'departure_time': None, 'remarks': self.trip_remarks, 'parts': []}
         if self.departure_time_actual > self.departure_time_planned:
             delay['departure_time'] = self.departure_time_actual - self.departure_time_planned
         for part in self.trip_parts:
