@@ -257,7 +257,7 @@ class Departure(BaseObject):
             return
         self.key = departure_dict['RitNummer'] + '_' + departure_dict['VertrekTijd']
         self.trip_number = departure_dict['RitNummer']
-        self.departure_time = departure_dict['VertrekTijd']
+        self.departure_time = load_datetime(departure_dict['VertrekTijd'], NS_DATETIME)
         try:
             self.has_delay = True
             self.departure_delay = departure_dict['VertrekVertraging']
@@ -294,6 +294,7 @@ class Departure(BaseObject):
     def __setstate__(self, source_dict):
         super(Departure, self).__setstate__(source_dict)
         # @TODO: datetime stamps
+        self.departure_time = load_datetime(departure_dict['VertrekTijd'], NS_DATETIME)
 
     @property
     def delay(self):
@@ -337,12 +338,11 @@ class TripStop(BaseObject):
         if part_dict is None:
             return
         self.name = part_dict['Naam']
-        dt_format = "%Y-%m-%dT%H:%M:%S%z"
-        self.time = load_datetime(part_dict['Tijd'], dt_format)
+        self.time = load_datetime(part_dict['Tijd'], NS_DATETIME)
         self.key = simple_time(self.time) + '_' + self.name
         self.platform_changed = False
         try:
-            self.platform = part_dict['Spoor']
+            self.platform = part_dict['Spoor']['#text']
             if part_dict['Spoor']['@wijziging'] == 'true':
                 self.platform_changed = True
         except KeyError:
