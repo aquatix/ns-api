@@ -36,6 +36,10 @@ def load_datetime(value, dt_format):
         dt_format = dt_format[:-2]
         offset = value[-5:]
         value = value[:-5]
+        if offset != offset.replace(':', ''):
+            # strip : from HHMM if needed (isoformat() adds it between HH and MM)
+            offset = '+' + offset.replace(':', '')
+            value = value[:-1]
         return OffsetTime(offset).localize(datetime.strptime(value, dt_format))
 
     return datetime.strptime(value, dt_format)
@@ -49,6 +53,11 @@ def dump_datetime(value, dt_format):
 
 
 def simple_time(value):
+    """
+    Format a datetime or timedelta object to a string of format HH:MM
+    """
+    if isinstance(value, timedelta):
+        return ':'.join(str(value).split(':')[:2])
     return dump_datetime(value, '%H:%M')
 
 
@@ -150,7 +159,8 @@ class BaseObject(object):
         """
         Parse a JSON representation of this model back to, well, the model
         """
-        source_dict = json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
+        #source_dict = json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
+        source_dict = json.JSONDecoder().decode(source_json)
         self.__setstate__(source_dict)
 
     def __eq__(self, other):
@@ -234,13 +244,12 @@ class Disruption(BaseObject):
 
     def __getstate__(self):
         result = super(Disruption, self).__getstate__()
-        #result = self.__dict__.copy()
         result['timestamp'] = result['timestamp'].isoformat()
         return result
 
     def __setstate__(self, source_dict):
         super(Disruption, self).__setstate__(source_dict)
-        # @TODO: datetime stamps
+        self.timestamp = load_datetime(self.timestamp, NS_DATETIME)
 
     def __unicode__(self):
         #return u'<Disruption> {0}'.format(self.line)
@@ -293,7 +302,6 @@ class Departure(BaseObject):
 
     def __setstate__(self, source_dict):
         super(Departure, self).__setstate__(source_dict)
-        # @TODO: datetime stamps
         self.departure_time = load_datetime(departure_dict['VertrekTijd'], NS_DATETIME)
 
     @property
@@ -353,6 +361,10 @@ class TripStop(BaseObject):
         result['time'] = result['time'].isoformat()
         return result
 
+    def __setstate__(self, source_dict):
+        super(TripStop, self).__setstate__(source_dict)
+        self.time = load_datetime(self.time, NS_DATETIME)
+
     def __unicode__(self):
         return u'<TripStop> {0}'.format(self.name)
 
@@ -411,6 +423,12 @@ class TripSubpart(BaseObject):
 
     def __setstate__(self, source_dict):
         super(TripSubpart, self).__setstate__(source_dict)
+        trip_stops = []
+        for raw_stop in self.stops:
+            trip_stop = TripStop()
+            trip_stop.from_json(raw_stop)
+            trip_stops.append(trip_stop)
+        self.stops = trip_stops
 
     def __unicode__(self):
         return u'<TripSubpart> [{0}] {1} {2} {3} {4}'.format(self.going, self.journey_id, self.trip_type, self.transport_type, self.status)
@@ -543,12 +561,7 @@ class Trip(BaseObject):
 
     def __setstate__(self, source_dict):
         super(Trip, self).__setstate__(source_dict)
-        dt_format = "%Y-%m-%dT%H:%M:%S%z"
 
-        try:
-            self.departure_time_planned = load_datetime(self.departure_time_planned, dt_format)
-        except:
-            self.departure_time_planned = None
         # TripSubpart deserialisation
         trip_parts = []
         subparts = self.trip_parts
@@ -565,7 +578,13 @@ class Trip(BaseObject):
             remark.from_json(raw_remark)
             trip_remarks.append(remark)
         self.trip_remarks = trip_remarks
-        # @TODO: datetime stamps
+        # Datetime stamps
+        self.departure_time_planned = load_datetime(self.departure_time_planned, NS_DATETIME)
+        self.departure_time_actual = load_datetime(self.departure_time_actual, NS_DATETIME)
+        self.arrival_time_planned = load_datetime(self.arrival_time_planned, NS_DATETIME)
+        self.arrival_time_actual = load_datetime(self.arrival_time_actual, NS_DATETIME)
+        self.requested_time = load_datetime(self.requested_time, NS_DATETIME)
+
 
     def delay_text(self):
         """
