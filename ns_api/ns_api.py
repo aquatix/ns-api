@@ -130,6 +130,19 @@ def list_same(list_a, list_b):
     return result
 
 
+def list_merge(list_a, list_b):
+    """
+    Merge two lists without duplicating items
+
+    Args:
+      list_a: list
+      list_b: list
+    Returns:
+      New list with deduplicated items from list_a and list_b
+    """
+    return list(collections.OrderedDict.fromkeys(list_a + list_b))
+
+
 ## NS API objects
 
 class BaseObject(object):
