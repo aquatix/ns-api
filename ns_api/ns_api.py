@@ -368,6 +368,10 @@ class TripStop(BaseObject):
                 self.platform_changed = True
         except KeyError:
             self.platform = None
+        try:
+            self.delay = part_dict['VertrekVertraging']
+        except KeyError:
+            self.delay = None
 
     def __getstate__(self):
         result = super(TripStop, self).__getstate__()
