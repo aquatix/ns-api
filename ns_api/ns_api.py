@@ -140,7 +140,16 @@ def list_merge(list_a, list_b):
     Returns:
       New list with deduplicated items from list_a and list_b
     """
-    return list(collections.OrderedDict.fromkeys(list_a + list_b))
+    #return list(collections.OrderedDict.fromkeys(list_a + list_b))
+    #result = list(list_b)
+    result = []
+    for item in list_a:
+        if not item in result:
+            result.append(item)
+    for item in list_b:
+        if not item in result:
+            result.append(item)
+    return result
 
 
 ## NS API objects
