@@ -20,3 +20,8 @@ Alternatively, follow the installation instructions of [ns-notifications](https:
 ## Example application
 
 For example, I use the library to push notifications about my route to my phone through [Pushbullet](http://pushbullet.com). Take a look at [pyPushBullet](https://github.com/Azelphur/pyPushBullet); you can install it with [PyPI](https://pypi.python.org/pypi) as `pypushbullet`. The program I use to do this has its own repository: [ns-notifications](https://github.com/aquatix/ns-notifications).
+
+
+### NS API key
+
+To actually be able to query the [Nederlandse Spoorwegen API](http://www.ns.nl/api/api), you [need to request a key](https://www.ns.nl/ews-aanvraagformulier/). Provide a good reason and you will likely get it mailed to you (it might take some days).
