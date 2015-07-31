@@ -15,6 +15,10 @@ import json
 import collections
 
 
+## ns-api library version
+__version__ = '2.0'
+
+
 ## Date/time helpers
 NS_DATETIME = "%Y-%m-%dT%H:%M:%S%z"
 
