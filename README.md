@@ -14,12 +14,12 @@ mkvirtualenv ns-api
 pip install -r requirements.txt
 ```
 
-Alternatively, follow the installation instructions of [ns-notifications](https://github.com/aquatix/ns-notifications), which makes extensive use of this library.
+Alternatively, follow the installation instructions of [ns-notifications](https://github.com/aquatix/ns-notifications), which makes extensive use of this library to serve notifications to for example a smartphone.
 
 
 ## Example application
 
-For example, I use the library to push notifications about my route to my phone through [Pushbullet](http://pushbullet.com). Take a look at [pyPushBullet](https://github.com/Azelphur/pyPushBullet); you can install it with [PyPI](https://pypi.python.org/pypi) as `pypushbullet`. The program I use to do this has its own repository: [ns-notifications](https://github.com/aquatix/ns-notifications).
+For example, I use the library to push notifications about my route to my phone through [Pushbullet](http://pushbullet.com). The program I use to do this has its own repository: [ns-notifications](https://github.com/aquatix/ns-notifications).
 
 
 ### NS API key
