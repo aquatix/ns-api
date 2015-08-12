@@ -16,7 +16,7 @@ import collections
 
 
 ## ns-api library version
-__version__ = '2.0'
+__version__ = '2.1'
 
 
 ## Date/time helpers
@@ -172,7 +172,8 @@ class BaseObject(object):
         """
         Create a JSON representation of this model
         """
-        return json.dumps(self.__getstate__())
+        #return json.dumps(self.__getstate__())
+        return json.dumps(self.__getstate__(), ensure_ascii=False)
 
     def __setstate__(self, source_dict):
         if not source_dict:
@@ -278,7 +279,7 @@ class Disruption(BaseObject):
         self.timestamp = load_datetime(self.timestamp, NS_DATETIME)
 
     def __unicode__(self):
-        #return u'<Disruption> {0}'.format(self.line)
+        return u'<Disruption> {0}'.format(self.line)
         return u'<Disruption> {0}'.format(self.key)
 
 
@@ -357,7 +358,7 @@ class TripRemark(BaseObject):
             self.is_grave = False
         else:
             self.is_grave = True
-        self.text = part_dict['Text']
+        self.message = part_dict['Text']
 
     def __unicode__(self):
         return u'<TripRemark> {0} {1}'.format(self.is_grave, self.text)
