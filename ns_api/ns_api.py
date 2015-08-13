@@ -361,7 +361,7 @@ class TripRemark(BaseObject):
         self.message = part_dict['Text']
 
     def __unicode__(self):
-        return u'<TripRemark> {0} {1}'.format(self.is_grave, self.text)
+        return u'<TripRemark> {0} {1}'.format(self.is_grave, self.message)
 
 
 class TripStop(BaseObject):
@@ -623,6 +623,18 @@ class Trip(BaseObject):
         """
         # TODO implement
         pass
+
+
+    @classmethod
+    def get_actual(cls, trip_list, time):
+        """
+        Look for the train actually leaving at time
+        """
+        for trip in trip_list:
+            if simple_time(trip.departure_time_planned) == time:
+                return trip
+        return None
+
 
     @classmethod
     def get_optimal(cls, trip_list, time):
