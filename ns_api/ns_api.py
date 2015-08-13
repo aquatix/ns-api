@@ -16,7 +16,7 @@ import collections
 
 
 ## ns-api library version
-__version__ = '2.1'
+__version__ = '2.2'
 
 
 ## Date/time helpers
@@ -488,6 +488,9 @@ class Trip(BaseObject):
         except KeyError:
             # Train has been cancelled
             self.travel_time_planned = None
+            self.going = False
+        if self.status == 'NIET-MOGELIJK':
+            # Train has been cancelled
             self.going = False
         self.travel_time_actual = trip_dict['ActueleReisTijd']
         self.is_optimal = True if trip_dict['Optimaal'] == 'true' else False
