@@ -16,7 +16,7 @@ import collections
 
 
 ## ns-api library version
-__version__ = '2.2'
+__version__ = '2.3'
 
 
 ## Date/time helpers
@@ -572,6 +572,16 @@ class Trip(BaseObject):
         for subpart in self.trip_parts:
             if subpart.has_delay:
                 return True
+        if self.requested_time != self.departure_time_actual:
+            return True
+        return False
+
+    @property
+    def has_departure_delay(self):
+        if self.status != 'VOLGENS-PLAN':
+            return True
+        if self.trip_parts[0].has_delay:
+            return True
         if self.requested_time != self.departure_time_actual:
             return True
         return False
