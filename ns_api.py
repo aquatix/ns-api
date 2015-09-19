@@ -577,10 +577,10 @@ class Trip(BaseObject):
         return False
 
     @property
-    def has_departure_delay(self):
+    def has_departure_delay(self, subpartcheck=True):
         if self.status != 'VOLGENS-PLAN':
             return True
-        if self.trip_parts[0].has_delay:
+        if subpartcheck and self.trip_parts[0].has_delay:
             return True
         if self.requested_time != self.departure_time_actual:
             return True
