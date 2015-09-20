@@ -5,7 +5,7 @@ Query the Dutch railways about your routes, getting info on delays and more. See
 
 [![PyPI](https://img.shields.io/pypi/v/nsapi.svg)](https://pypi.python.org/pypi/nsapi/)
 [![PyPI](https://img.shields.io/pypi/dm/nsapi.svg)](https://pypi.python.org/pypi/nsapi/)
-[![PyPI](https://img.shields.io/pypi/license/aquatix/ns-api.svg)](https://pypi.python.org/pypi/nsapi/)
+[![PyPI](https://img.shields.io/github/license/aquatix/ns-api.svg)](https://pypi.python.org/pypi/nsapi/)
 
 ## Installation
 
