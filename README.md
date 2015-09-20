@@ -5,7 +5,7 @@ Query the Dutch railways about your routes, getting info on delays and more. See
 
 ## Installation
 
-### From pypi
+### From PyPI
 
 Assuming you already are inside a virtualenv:
 
@@ -16,9 +16,11 @@ pip install nsapi
 
 ### From Git
 
-Create a new virtualenv and install the necessary packages:
+Create a new virtualenv (if you are not already in one) and install the necessary packages:
 
 ```
+git clone https://github.com/aquatix/ns-api.git
+cd ns-api
 mkvirtualenv ns-api
 pip install -r requirements.txt
 ```
@@ -26,7 +28,7 @@ pip install -r requirements.txt
 
 ### As part of ns-notifications
 
-Alternatively, follow the installation instructions of [ns-notifications](https://github.com/aquatix/ns-notifications), which makes extensive use of this library to serve notifications to for example a smartphone. The requirements of both packages can be installed in the same `ns-notifications` one mentioned in the project.
+Alternatively, follow the installation instructions of [ns-notifications](https://github.com/aquatix/ns-notifications), which makes extensive use of this library to serve notifications to for example a smartphone. The requirements of both packages can be installed in the same `ns-notifications` one mentioned in the project; `ns-api` will be installed through pip from [PyPI](https://pypi.python.org/pypi/nsapi).
 
 
 ## Example application
