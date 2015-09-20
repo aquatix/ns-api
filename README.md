@@ -3,6 +3,10 @@ ns_api
 
 Query the Dutch railways about your routes, getting info on delays and more. See below for the syntax and example output.
 
+[![PyPI](https://img.shields.io/pypi/v/nsapi.svg)](https://pypi.python.org/pypi/nsapi/)
+[![PyPI](https://img.shields.io/pypi/dm/nsapi.svg)](https://pypi.python.org/pypi/nsapi/)
+[![PyPI](https://img.shields.io/pypi/license/nsapi.svg)](https://pypi.python.org/pypi/nsapi/)
+
 ## Installation
 
 ### From PyPI
