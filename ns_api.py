@@ -82,7 +82,7 @@ def list_from_json(source_list_json):
     Deserialise all the items in source_list from json
     """
     result = []
-    if source_list_json == []:
+    if source_list_json == [] or source_list_json == None:
         return result
     for list_item in source_list_json:
         item = json.loads(list_item)
