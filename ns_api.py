@@ -444,6 +444,20 @@ class TripSubpart(BaseObject):
         return self.stops[0].time
 
 
+    def has_departure_delay(self, arrival_check=True):
+        if arrival_check==False and self.has_delay:
+            # Check whether one or more stops have delay, except last one
+            delay_found = False
+            for stop in self.stops:
+                if stop.delay and stop:
+                    delay_found = True
+                elif stop.delay == False and stop == self.stops[-1]:
+                    # Last stop and it doesn't have a delay
+                    return delay_found
+        else:
+            return self.has_delay
+
+
     def __getstate__(self):
         result = super(TripSubpart, self).__getstate__()
         stops = []
@@ -566,11 +580,14 @@ class Trip(BaseObject):
         return delay
 
     @property
-    def has_delay(self):
+    def has_delay(self, arrival_check=True):
         if self.status != 'VOLGENS-PLAN':
             return True
         for subpart in self.trip_parts:
             if subpart.has_delay:
+                if subpart == self.trip_parts[-1]:
+                    # Is last part of the trip, check if it is only the arrival
+                    return subpart.has_departure_delay(arrival_check)
                 return True
         if self.requested_time != self.departure_time_actual:
             return True
