@@ -579,7 +579,6 @@ class Trip(BaseObject):
                 delay['parts'].append(part)
         return delay
 
-    @property
     def has_delay(self, arrival_check=True):
         if self.status != 'VOLGENS-PLAN':
             return True
@@ -593,8 +592,10 @@ class Trip(BaseObject):
             return True
         return False
 
-    @property
     def has_departure_delay(self, subpartcheck=True):
+        """
+        Deprecated
+        """
         if self.status != 'VOLGENS-PLAN':
             return True
         if subpartcheck and self.trip_parts[0].has_delay:
