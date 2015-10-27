@@ -8,6 +8,7 @@ import xmltodict
 
 from datetime import datetime, timedelta
 
+import pytz
 from pytz.tzinfo import StaticTzInfo
 import time
 
@@ -63,6 +64,12 @@ def simple_time(value):
     if isinstance(value, timedelta):
         return ':'.join(str(value).split(':')[:2])
     return dump_datetime(value, '%H:%M')
+
+
+def is_dst(zonename):
+    tz = pytz.timezone(zonename)
+    now = pytz.utc.localize(datetime.utcnow())
+    return now.astimezone(tz).dst() != timedelta(0)
 
 
 ## List helpers
@@ -824,6 +831,9 @@ class NSAPI(object):
         previousAdvices
         nextAdvices
         """
+        timezonestring = '+0100'
+        if is_dst('Europe/Amsterdam'):
+            timezonestring = '+0200'
         url = 'http://webservices.ns.nl/ns-api-treinplanner?'
         url = url + 'fromStation=' + start
         url = url + '&toStation=' + destination
@@ -834,10 +844,10 @@ class NSAPI(object):
             timestamp = time.strftime("%Y-%m-%d") + 'T' + timestamp
             #requested_time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M")
             # TODO: DST/normal time
-            requested_time = load_datetime(timestamp + '+0200', "%Y-%m-%dT%H:%M%z")
+            requested_time = load_datetime(timestamp + timezonestring, "%Y-%m-%dT%H:%M%z")
         else:
             #requested_time = datetime.strptime(timestamp, "%d-%m-%Y %H:%M")
-            requested_time = load_datetime(timestamp + '+0200', "%d-%m-%Y %H:%M%z")
+            requested_time = load_datetime(timestamp + timezonestring, "%d-%m-%Y %H:%M%z")
             timestamp = datetime.strptime(timestamp, "%d-%m-%Y %H:%M").strftime("%Y-%m-%dT%H:%M")
         url = url + '&previousAdvices=' + str(prev_advices)
         url = url + '&nextAdvices=' + str(next_advices)
