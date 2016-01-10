@@ -17,7 +17,7 @@ import collections
 
 
 ## ns-api library version
-__version__ = '2.4'
+__version__ = '2.5'
 
 
 ## Date/time helpers
