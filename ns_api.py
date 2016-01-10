@@ -714,6 +714,7 @@ class NSAPI(object):
                              files=None,
                              auth=HTTPBasicAuth(self.username, self.apikey))
 
+        r.encoding = 'utf-8'
         r.raise_for_status()
         return r.text
 
