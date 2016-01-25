@@ -806,17 +806,15 @@ class NSAPI(object):
 
         if 'error' in obj:
             print 'Error in trips: ' + obj['error']['message']
-            return []
+            return None
 
-        for trip in obj['ReisMogelijkheden']['ReisMogelijkheid']:
-            newtrip = Trip(trip, requested_time)
-            trips.append(newtrip)
-            #print('-- trip --')
-            #print(newtrip)
-            #print(newtrip.__dict__)
-            #print(newtrip.to_json())
-            #print(newtrip.delay)
-            #print('-- /trip --')
+        try:
+            for trip in obj['ReisMogelijkheden']['ReisMogelijkheid']:
+                newtrip = Trip(trip, requested_time)
+                trips.append(newtrip)
+        except TypeError:
+            # If no options are found, obj['ReisMogelijkheden'] is None
+            return None
 
         return trips
 
