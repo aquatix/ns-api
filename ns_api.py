@@ -1,6 +1,9 @@
 """
 Library to query the official Dutch railways API
 """
+from __future__ import print_function
+from future.utils import python_2_unicode_compatible
+
 import requests
 from requests.auth import HTTPBasicAuth
 import xmltodict
@@ -164,7 +167,7 @@ def list_merge(list_a, list_b):
 
 
 ## NS API objects
-
+@python_2_unicode_compatible
 class BaseObject(object):
     """
     Base object with useful functions
@@ -201,13 +204,10 @@ class BaseObject(object):
         return self.__dict__ == other.__dict__
 
     def __repr__(self):
-        return self.__unicode__()
+        return self.__str__()
 
     def __str__(self):
-        return unicode(self).encode('utf-8')
-
-    def __unicode__(self):
-        raise NotImplementedError('subclasses must override __unicode__()')
+        raise NotImplementedError('subclasses must override __str__()')
 
 
 class Station(BaseObject):
@@ -233,14 +233,14 @@ class Station(BaseObject):
         self.synonyms = []
         try:
             raw_synonyms = stat_dict['Synoniemen']['Synoniem']
-            if isinstance(raw_synonyms, unicode):
+            if isinstance(raw_synonyms, str):
                 raw_synonyms = [raw_synonyms]
             for synonym in raw_synonyms:
                 self.synonyms.append(synonym)
         except TypeError:
             self.synonyms = []
 
-    def __unicode__(self):
+    def __str__(self):
         return u'<Station> {0} {1}'.format(self.code, self.names['long'])
 
 
@@ -285,7 +285,7 @@ class Disruption(BaseObject):
         super(Disruption, self).__setstate__(source_dict)
         self.timestamp = load_datetime(self.timestamp, NS_DATETIME)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'<Disruption> {0}'.format(self.line)
         return u'<Disruption> {0}'.format(self.key)
 
@@ -348,7 +348,7 @@ class Departure(BaseObject):
         else:
             return None
 
-    def __unicode__(self):
+    def __str__(self):
         return u'<Departure> trip_number: {0} {1} {2}'.format(self.trip_number, self.destination, self.departure_time)
 
 
@@ -367,7 +367,7 @@ class TripRemark(BaseObject):
             self.is_grave = True
         self.message = part_dict['Text']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'<TripRemark> {0} {1}'.format(self.is_grave, self.message)
 
 
@@ -403,7 +403,7 @@ class TripStop(BaseObject):
         super(TripStop, self).__setstate__(source_dict)
         self.time = load_datetime(self.time, NS_DATETIME)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'<TripStop> {0}'.format(self.name)
 
 
@@ -482,7 +482,7 @@ class TripSubpart(BaseObject):
             trip_stops.append(trip_stop)
         self.stops = trip_stops
 
-    def __unicode__(self):
+    def __str__(self):
         return u'<TripSubpart> [{0}] {1} {2} {3} {4}'.format(self.going, self.journey_id, self.trip_type, self.transport_type, self.status)
 
 
@@ -684,7 +684,7 @@ class Trip(BaseObject):
                 return trip
         return None
 
-    def __unicode__(self):
+    def __str__(self):
         return u'<Trip> {0} plan: {1} actual: {2} transfers: {3}'.format(self.has_delay, self.departure_time_planned, self.departure_time_actual, self.nr_transfers)
 
 
@@ -805,7 +805,7 @@ class NSAPI(object):
         trips = []
 
         if 'error' in obj:
-            print 'Error in trips: ' + obj['error']['message']
+            print('Error in trips: ' + obj['error']['message'])
             return None
 
         try:
@@ -863,7 +863,7 @@ class NSAPI(object):
             newstat = Station(station)
             stations.append(newstat)
 
-        print len(stations)
+        print(len(stations))
         return stations
 
 
