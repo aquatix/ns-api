@@ -806,7 +806,7 @@ class NSAPI(object):
 
         if 'error' in obj:
             print 'Error in trips: ' + obj['error']['message']
-            return None
+            return []
 
         for trip in obj['ReisMogelijkheden']['ReisMogelijkheid']:
             newtrip = Trip(trip, requested_time)
