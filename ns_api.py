@@ -380,7 +380,12 @@ class TripStop(BaseObject):
         if part_dict is None:
             return
         self.name = part_dict['Naam']
-        self.time = load_datetime(part_dict['Tijd'], NS_DATETIME)
+        try:
+            self.time = load_datetime(part_dict['Tijd'], NS_DATETIME)
+        except TypeError:
+            # In some rare cases part_dict['Tijd'] can be None
+            #self.time = datetime(2000, 1, 1, 0, 0, 0)
+            self.time = None
         self.key = simple_time(self.time) + '_' + self.name
         self.platform_changed = False
         try:
