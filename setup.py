@@ -26,7 +26,7 @@ setup(
     # third part for minor release
     # second when api changes
     # first when it becomes stable someday
-    version='2.7',
+    version='2.7.1',
     author='Michiel Scholten',
     author_email='michiel@diginaut.net',
 
@@ -37,7 +37,24 @@ setup(
     # work unless the specific versions are used
     install_requires=['requests>=2.9.1', 'pytz>=2015.7', 'xmltodict', 'future'],
 
+    #package_dir={'ns_api': ''},
     py_modules=['ns_api'],
-
+    classifiers=[
+        "Topic :: Software Development :: Libraries",
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.4",
+        "Programming Language :: Python :: 2.5",
+        "Programming Language :: Python :: 2.6",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.1",
+        "Programming Language :: Python :: 3.2",
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        ],
     zip_safe=True,
 )
