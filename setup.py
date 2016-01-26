@@ -17,7 +17,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='nsapi', # pip install pocket
+    name='nsapi', # pip install nsapi
     description='api wrapper for Dutch Railways (NS)',
     #long_description=open('README.md', 'rt').read(),
     long_description=long_description,
@@ -26,7 +26,7 @@ setup(
     # third part for minor release
     # second when api changes
     # first when it becomes stable someday
-    version='2.6.1',
+    version='2.7',
     author='Michiel Scholten',
     author_email='michiel@diginaut.net',
 
