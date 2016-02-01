@@ -1,5 +1,5 @@
-
-"""A setuptools based setup module.
+"""
+A setuptools based setup module.
 See:
 https://packaging.python.org/en/latest/distributing.html
 https://github.com/pypa/sampleproject
@@ -26,7 +26,7 @@ setup(
     # third part for minor release
     # second when api changes
     # first when it becomes stable someday
-    version='2.7.1',
+    version='2.7.2',
     author='Michiel Scholten',
     author_email='michiel@diginaut.net',
 
@@ -35,7 +35,7 @@ setup(
 
     # as a practice no need to hard code version unless you know program wont
     # work unless the specific versions are used
-    install_requires=['requests>=2.9.1', 'pytz>=2015.7', 'xmltodict', 'future'],
+    install_requires=['requests>=2.9.1', 'pytz>=2015.7', 'utilkit>=0.1.3', 'xmltodict', 'future'],
 
     #package_dir={'ns_api': ''},
     py_modules=['ns_api'],
