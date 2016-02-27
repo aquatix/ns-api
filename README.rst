@@ -45,7 +45,7 @@ in the same ``ns-notifications`` one mentioned in the project;
 Also take a look at nsmaps
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Bart Römgens created [a fascinating contour map called nsmaps](https://github.com/bartromgens/nsmaps) based on ns-api. It visualises Dutch railways travel information with OpenLayer 3 contour maps to show how long it takes to get somewhere in the Netherlands by train and bicycle.
+Bart Römgens created `a fascinating contour map called nsmaps <https://github.com/bartromgens/nsmaps>`__ based on ns-api. It visualises Dutch railways travel information with OpenLayer 3 contour maps to show how long it takes to get somewhere in the Netherlands by train and bicycle.
 
 Example application
 -------------------
