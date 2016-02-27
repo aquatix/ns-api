@@ -9,7 +9,7 @@ from requests.auth import HTTPBasicAuth
 import xmltodict
 
 from utilkit import datetimeutil
-
+from datetime import datetime
 import time
 
 import json
@@ -330,11 +330,12 @@ class TripStop(BaseObject):
         self.name = part_dict['Naam']
         try:
             self.time = datetimeutil.load_datetime(part_dict['Tijd'], NS_DATETIME)
+            self.key = datetimeutil.simple_time(self.time) + '_' + self.name
         except TypeError:
             # In some rare cases part_dict['Tijd'] can be None
             #self.time = datetime(2000, 1, 1, 0, 0, 0)
             self.time = None
-        self.key = datetimeutil.simple_time(self.time) + '_' + self.name
+            self.key = None
         self.platform_changed = False
         try:
             self.platform = part_dict['Spoor']['#text']
