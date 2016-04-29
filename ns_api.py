@@ -284,7 +284,7 @@ class Departure(BaseObject):
 
     def __setstate__(self, source_dict):
         super(Departure, self).__setstate__(source_dict)
-        self.departure_time = datetimeutil.load_datetime(departure_dict['VertrekTijd'], NS_DATETIME)
+        self.departure_time = datetimeutil.load_datetime(source_dict['VertrekTijd'], NS_DATETIME)
 
     @property
     def delay(self):
