@@ -235,7 +235,7 @@ class Disruption(BaseObject):
 
     def __str__(self):
         return u'<Disruption> {0}'.format(self.line)
-        return u'<Disruption> {0}'.format(self.key)
+        #return u'<Disruption> {0}'.format(self.key)
 
 
 class Departure(BaseObject):
@@ -629,7 +629,7 @@ class Trip(BaseObject):
 
 
     @classmethod
-    def get_optimal(cls, trip_list, time):
+    def get_optimal(cls, trip_list):
         """
         Look for the optimal trip in the list
         """
