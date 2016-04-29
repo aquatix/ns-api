@@ -5,7 +5,7 @@ nsapi
 Query the Dutch railways about your routes, getting info on delays and
 more. See below for the syntax and example output.
 
-|PyPI version| |PyPI downloads| |PyPI license|
+|PyPI version| |PyPI downloads| |PyPI license| |Code health|
 
 Installation
 ------------
@@ -68,4 +68,7 @@ and you will likely get it mailed to you (it might take some days).
    :target: https://pypi.python.org/pypi/nsapi/
 .. |PyPI license| image:: https://img.shields.io/github/license/aquatix/ns-api.svg
    :target: https://pypi.python.org/pypi/nsapi/
+.. |Code health|:: https://landscape.io/github/aquatix/ns-api/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/aquatix/ns-api/master
+   :alt: Code Health
 .. _ns-notifications: https://github.com/aquatix/ns-notifications
