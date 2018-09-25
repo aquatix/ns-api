@@ -35,7 +35,7 @@ setup(
 
     # as a practice no need to hard code version unless you know program wont
     # work unless the specific versions are used
-    install_requires=['requests>=2.9.1', 'pytz>=2015.7', 'utilkit>=0.1.4', 'xmltodict', 'future'],
+    install_requires=['requests>=2.19.1', 'pytz>=2018.5', 'xmltodict', 'future'],
 
     #package_dir={'ns_api': ''},
     py_modules=['ns_api'],

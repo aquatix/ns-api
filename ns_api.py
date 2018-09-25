@@ -2,19 +2,18 @@
 Library to query the official Dutch railways API
 """
 from __future__ import print_function
-from future.utils import python_2_unicode_compatible
 
-import requests
-from requests.auth import HTTPBasicAuth
-import xmltodict
-
-from utilkit import datetimeutil
-from datetime import datetime
-import time
-
-import json
 import collections
+import json
+import time
+from datetime import datetime, timedelta
 
+import pytz
+import requests
+import xmltodict
+from future.utils import python_2_unicode_compatible
+from pytz.tzinfo import StaticTzInfo
+from requests.auth import HTTPBasicAuth
 
 ## ns-api library version
 __version__ = '2.7.4'
@@ -22,6 +21,60 @@ __version__ = '2.7.4'
 
 ## Date/time helpers
 NS_DATETIME = "%Y-%m-%dT%H:%M:%S%z"
+
+def datetime_to_string(timestamp, dt_format='%Y-%m-%d %H:%M:%S'):
+    """
+    Format datetime object to string
+    """
+    return timestamp.strftime(dt_format)
+
+
+def simple_time(value):
+    """
+    Format a datetime or timedelta object to a string of format HH:MM
+    """
+    if isinstance(value, timedelta):
+        return ':'.join(str(value).split(':')[:2])
+    return datetime_to_string(value, '%H:%M')
+
+
+## Timezone helpers
+
+def is_dst(zonename):
+    """
+    Find out whether it's Daylight Saving Time in this timezone
+    """
+    tz = pytz.timezone(zonename)
+    now = pytz.utc.localize(datetime.utcnow())
+    return now.astimezone(tz).dst() != timedelta(0)
+
+
+class OffsetTime(StaticTzInfo):
+    """
+    A dumb timezone based on offset such as +0530, -0600, etc.
+    """
+    def __init__(self, offset):
+        hours = int(offset[:3])
+        minutes = int(offset[0] + offset[3:])
+        self._utcoffset = timedelta(hours=hours, minutes=minutes)
+
+
+def load_datetime(value, dt_format):
+    """
+    Create timezone-aware datetime object
+    """
+    if dt_format.endswith('%z'):
+        dt_format = dt_format[:-2]
+        offset = value[-5:]
+        value = value[:-5]
+        if offset != offset.replace(':', ''):
+            # strip : from HHMM if needed (isoformat() adds it between HH and MM)
+            offset = '+' + offset.replace(':', '')
+            value = value[:-1]
+        return OffsetTime(offset).localize(datetime.strptime(value, dt_format))
+
+    return datetime.strptime(value, dt_format)
+
 
 ## List helpers
 
@@ -220,7 +273,7 @@ class Disruption(BaseObject):
             self.delay_text = None
 
         try:
-            self.timestamp = datetimeutil.load_datetime(part_dict['Datum'], NS_DATETIME)
+            self.timestamp = load_datetime(part_dict['Datum'], NS_DATETIME)
         except:
             self.timestamp = None
 
@@ -231,7 +284,7 @@ class Disruption(BaseObject):
 
     def __setstate__(self, source_dict):
         super(Disruption, self).__setstate__(source_dict)
-        self.timestamp = datetimeutil.load_datetime(self.timestamp, NS_DATETIME)
+        self.timestamp = load_datetime(self.timestamp, NS_DATETIME)
 
     def __str__(self):
         return u'<Disruption> {0}'.format(self.line)
@@ -248,7 +301,7 @@ class Departure(BaseObject):
             return
         self.key = departure_dict['RitNummer'] + '_' + departure_dict['VertrekTijd']
         self.trip_number = departure_dict['RitNummer']
-        self.departure_time = datetimeutil.load_datetime(departure_dict['VertrekTijd'], NS_DATETIME)
+        self.departure_time = load_datetime(departure_dict['VertrekTijd'], NS_DATETIME)
         try:
             self.has_delay = True
             self.departure_delay = departure_dict['VertrekVertraging']
@@ -284,7 +337,7 @@ class Departure(BaseObject):
 
     def __setstate__(self, source_dict):
         super(Departure, self).__setstate__(source_dict)
-        self.departure_time = datetimeutil.load_datetime(source_dict['VertrekTijd'], NS_DATETIME)
+        self.departure_time = load_datetime(source_dict['VertrekTijd'], NS_DATETIME)
 
     @property
     def delay(self):
@@ -329,8 +382,8 @@ class TripStop(BaseObject):
             return
         self.name = part_dict['Naam']
         try:
-            self.time = datetimeutil.load_datetime(part_dict['Tijd'], NS_DATETIME)
-            self.key = datetimeutil.simple_time(self.time) + '_' + self.name
+            self.time = load_datetime(part_dict['Tijd'], NS_DATETIME)
+            self.key = simple_time(self.time) + '_' + self.name
         except TypeError:
             # In some rare cases part_dict['Tijd'] can be None
             #self.time = datetime(2000, 1, 1, 0, 0, 0)
@@ -355,7 +408,7 @@ class TripStop(BaseObject):
 
     def __setstate__(self, source_dict):
         super(TripStop, self).__setstate__(source_dict)
-        self.time = datetimeutil.load_datetime(self.time, NS_DATETIME)
+        self.time = load_datetime(self.time, NS_DATETIME)
 
     def __str__(self):
         return u'<TripStop> {0}'.format(self.name)
@@ -475,22 +528,22 @@ class Trip(BaseObject):
         self.requested_time = datetime
 
         try:
-            self.departure_time_planned = datetimeutil.load_datetime(trip_dict['GeplandeVertrekTijd'], dt_format)
+            self.departure_time_planned = load_datetime(trip_dict['GeplandeVertrekTijd'], dt_format)
         except:
             self.departure_time_planned = None
 
         try:
-            self.departure_time_actual = datetimeutil.load_datetime(trip_dict['ActueleVertrekTijd'], dt_format)
+            self.departure_time_actual = load_datetime(trip_dict['ActueleVertrekTijd'], dt_format)
         except:
             self.departure_time_actual = None
 
         try:
-            self.arrival_time_planned = datetimeutil.load_datetime(trip_dict['GeplandeAankomstTijd'], dt_format)
+            self.arrival_time_planned = load_datetime(trip_dict['GeplandeAankomstTijd'], dt_format)
         except:
             self.arrival_time_planned = None
 
         try:
-            self.arrival_time_actual = datetimeutil.load_datetime(trip_dict['ActueleAankomstTijd'], dt_format)
+            self.arrival_time_actual = load_datetime(trip_dict['ActueleAankomstTijd'], dt_format)
         except:
             self.arrival_time_actual = None
 
@@ -602,11 +655,11 @@ class Trip(BaseObject):
             trip_remarks.append(remark)
         self.trip_remarks = trip_remarks
         # Datetime stamps
-        self.departure_time_planned = datetimeutil.load_datetime(self.departure_time_planned, NS_DATETIME)
-        self.departure_time_actual = datetimeutil.load_datetime(self.departure_time_actual, NS_DATETIME)
-        self.arrival_time_planned = datetimeutil.load_datetime(self.arrival_time_planned, NS_DATETIME)
-        self.arrival_time_actual = datetimeutil.load_datetime(self.arrival_time_actual, NS_DATETIME)
-        self.requested_time = datetimeutil.load_datetime(self.requested_time, NS_DATETIME)
+        self.departure_time_planned = load_datetime(self.departure_time_planned, NS_DATETIME)
+        self.departure_time_actual = load_datetime(self.departure_time_actual, NS_DATETIME)
+        self.arrival_time_planned = load_datetime(self.arrival_time_planned, NS_DATETIME)
+        self.arrival_time_actual = load_datetime(self.arrival_time_actual, NS_DATETIME)
+        self.requested_time = load_datetime(self.requested_time, NS_DATETIME)
 
 
     def delay_text(self):
@@ -623,7 +676,7 @@ class Trip(BaseObject):
         Look for the train actually leaving at time
         """
         for trip in trip_list:
-            if datetimeutil.simple_time(trip.departure_time_planned) == time:
+            if simple_time(trip.departure_time_planned) == time:
                 return trip
         return None
 
@@ -785,7 +838,7 @@ class NSAPI(object):
         nextAdvices
         """
         timezonestring = '+0100'
-        if datetimeutil.is_dst('Europe/Amsterdam'):
+        if is_dst('Europe/Amsterdam'):
             timezonestring = '+0200'
         url = 'http://webservices.ns.nl/ns-api-treinplanner?'
         url = url + 'fromStation=' + start
@@ -797,10 +850,10 @@ class NSAPI(object):
             timestamp = time.strftime("%Y-%m-%d") + 'T' + timestamp
             #requested_time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M")
             # TODO: DST/normal time
-            requested_time = datetimeutil.load_datetime(timestamp + timezonestring, "%Y-%m-%dT%H:%M%z")
+            requested_time = load_datetime(timestamp + timezonestring, "%Y-%m-%dT%H:%M%z")
         else:
             #requested_time = datetime.strptime(timestamp, "%d-%m-%Y %H:%M")
-            requested_time = datetimeutil.load_datetime(timestamp + timezonestring, "%d-%m-%Y %H:%M%z")
+            requested_time = load_datetime(timestamp + timezonestring, "%d-%m-%Y %H:%M%z")
             timestamp = datetime.strptime(timestamp, "%d-%m-%Y %H:%M").strftime("%Y-%m-%dT%H:%M")
         url = url + '&previousAdvices=' + str(prev_advices)
         url = url + '&nextAdvices=' + str(next_advices)
@@ -828,4 +881,3 @@ class NSAPI(object):
         url = 'http://webservices.ns.nl/ns-api-stations-v2'
         raw_stations = self._request('GET', url)
         return self.parse_stations(raw_stations)
-
