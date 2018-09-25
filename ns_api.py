@@ -16,7 +16,7 @@ from pytz.tzinfo import StaticTzInfo
 from requests.auth import HTTPBasicAuth
 
 ## ns-api library version
-__version__ = '2.7.4'
+__version__ = '2.7.5'
 
 
 ## Date/time helpers
