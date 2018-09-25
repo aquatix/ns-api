@@ -63,3 +63,6 @@ target/
 
 # vim
 *.swp
+
+# ctags
+tags
