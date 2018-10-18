@@ -4,11 +4,11 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
-certifi==2018.8.24        # via requests
+certifi==2018.10.15       # via requests
 chardet==3.0.4            # via requests
 future==0.16.0
 idna==2.7                 # via requests
 pytz==2018.5
-requests==2.19.1
-urllib3==1.23             # via requests
+requests==2.20.0
+urllib3==1.24             # via requests
 xmltodict==0.11.0

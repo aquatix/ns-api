@@ -8,7 +8,7 @@ astroid==1.6.5            # via pylint
 backports.functools-lru-cache==1.5  # via astroid, pylint
 blessings==1.7            # via curtsies
 bpython==0.17.1
-certifi==2018.8.24        # via requests
+certifi==2018.10.15       # via requests
 chardet==3.0.4            # via requests
 configparser==3.5.0       # via pylint
 curtsies==0.3.0           # via bpython
@@ -23,11 +23,11 @@ mccabe==0.6.1             # via pylint
 pygments==2.2.0           # via bpython
 pylint==1.9.3
 pytz==2018.5
-requests==2.19.1
+requests==2.20.0
 singledispatch==3.4.0.3   # via astroid, pylint
 six==1.11.0               # via astroid, blessings, bpython, pylint, singledispatch
 typing==3.6.6             # via curtsies
-urllib3==1.23             # via requests
+urllib3==1.24             # via requests
 wcwidth==0.1.7            # via curtsies
 wrapt==1.10.11            # via astroid
 xmltodict==0.11.0
