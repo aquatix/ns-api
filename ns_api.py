@@ -15,11 +15,8 @@ import urllib.error
 import base64
 
 import pytz
-import requests
-import xmltodict
 from future.utils import python_2_unicode_compatible
 from pytz.tzinfo import StaticTzInfo
-from requests.auth import HTTPBasicAuth
 
 # ns-api library version
 __version__ = '2.8.0'
@@ -735,7 +732,6 @@ class NSAPI(object):
             return data
         except Exception as e:
             print("[Errno {0}] {1}".format(e.errno, e.strerror))
-
     def parse_disruptions(self, data):
         """
         Parse the NS API json result into Disruption objects
