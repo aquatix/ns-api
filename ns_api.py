@@ -8,8 +8,11 @@ import json
 import time
 from datetime import datetime, timedelta
 
-import http.client, urllib.request, urllib.parse, urllib.error, base64
-
+import http.client
+import urllib.request
+import urllib.parse
+import urllib.error
+import base64
 
 import pytz
 import requests
@@ -18,15 +21,16 @@ from future.utils import python_2_unicode_compatible
 from pytz.tzinfo import StaticTzInfo
 from requests.auth import HTTPBasicAuth
 
-## ns-api library version
+# ns-api library version
 __version__ = '3.0.1'
 
 
-## Date/time helpers
+# Date/time helpers
 NS_DATETIME = "%Y-%m-%dT%H:%M:%S%z"
 
-## set placeholder url params
+# set placeholder url params
 params = urllib.parse.urlencode({})
+
 
 def datetime_to_string(timestamp, dt_format='%Y-%m-%d %H:%M:%S'):
     """
@@ -43,8 +47,8 @@ def simple_time(value):
         return ':'.join(str(value).split(':')[:2])
     return datetime_to_string(value, '%H:%M')
 
+# Timezone helpers
 
-## Timezone helpers
 
 def is_dst(zonename):
     """
@@ -59,6 +63,7 @@ class OffsetTime(StaticTzInfo):
     """
     A dumb timezone based on offset such as +0530, -0600, etc.
     """
+
     def __init__(self, offset):
         hours = int(offset[:3])
         minutes = int(offset[0] + offset[3:])
@@ -82,7 +87,7 @@ def load_datetime(value, dt_format):
     return datetime.strptime(value, dt_format)
 
 
-## List helpers
+# List helpers
 
 def list_to_json(source_list):
     """
@@ -119,7 +124,8 @@ def list_from_json(source_list_json):
             elif item['class_name'] == 'TripSubpart':
                 temp = TripSubpart()
             else:
-                print(('Unrecognised Class ' + item['class_name'] + ', skipping'))
+                print(('Unrecognised Class ' +
+                       item['class_name'] + ', skipping'))
                 continue
             temp.from_json(list_item)
             result.append(temp)
@@ -161,7 +167,7 @@ def list_merge(list_a, list_b):
     Returns:
       New list with deduplicated items from list_a and list_b
     """
-    #return list(collections.OrderedDict.fromkeys(list_a + list_b))
+    # return list(collections.OrderedDict.fromkeys(list_a + list_b))
     #result = list(list_b)
     result = []
     for item in list_a:
@@ -173,7 +179,7 @@ def list_merge(list_a, list_b):
     return result
 
 
-## NS API objects
+# NS API objects
 @python_2_unicode_compatible
 class BaseObject(object):
     """
@@ -189,7 +195,7 @@ class BaseObject(object):
         """
         Create a JSON representation of this model
         """
-        #return json.dumps(self.__getstate__())
+        # return json.dumps(self.__getstate__())
         return json.dumps(self.__getstate__(), ensure_ascii=False)
 
     def __setstate__(self, source_dict):
@@ -277,7 +283,6 @@ class Disruption(BaseObject):
 
     def __str__(self):
         return '<Disruption> {0}'.format(self.line)
-        #return u'<Disruption> {0}'.format(self.key)
 
 
 class Departure(BaseObject):
@@ -288,21 +293,27 @@ class Departure(BaseObject):
     def __init__(self, departure_dict=None):
         if departure_dict is None:
             return
-        self.key = departure_dict['product']['number'] + '_' + departure_dict['plannedDateTime']
+        self.key = departure_dict['product']['number'] + \
+            '_' + departure_dict['plannedDateTime']
         self.trip_number = departure_dict['product']['number']
-        self.departure_time_planned = load_datetime(departure_dict['plannedDateTime'], NS_DATETIME)
+        self.departure_time_planned = load_datetime(
+            departure_dict['plannedDateTime'], NS_DATETIME)
         self.departure_status = departure_dict['departureStatus']
         self.cancled = departure_dict['cancelled']
         self.delay = 0
         try:
-            self.departure_time_actual = load_datetime(departure_dict['actualDateTime'], NS_DATETIME)
-            if self.departure_time_actual != self.departure_time_planned:
+            self.departure_time_actual = load_datetime(
+                departure_dict['actualDateTime'], NS_DATETIME)
+            if self.departure_time_actual is not None and self.departure_time_actual != self.departure_time_planned:
                 self.has_delay = True
-                delay = (self.departure_time_actual - self.departure_time_planned)
+                delay = (self.departure_time_actual -
+                         self.departure_time_planned)
                 self.delay = delay.seconds // 60 % 60
         except KeyError:
             self.has_delay = False
+
         self.departure_platform = departure_dict['plannedTrack']
+
         try:
             self.departure_platform_actual = departure_dict['actualTrack']
             if self.departure_platform_actual != self.departure_time_planned:
@@ -311,13 +322,14 @@ class Departure(BaseObject):
             self.has_platform_changed = False
 
         self.destination = departure_dict['direction']
+
         try:
             self.route_text = departure_dict['RouteTekst']
         except KeyError:
             self.route_text = None
 
         self.train_type = departure_dict['trainCategory']
-        self.carrier = departure_dict ['product']['operatorName']
+        self.carrier = departure_dict['product']['operatorName']
 
     def __getstate__(self):
         result = super(Departure, self).__getstate__()
@@ -326,8 +338,8 @@ class Departure(BaseObject):
 
     def __setstate__(self, source_dict):
         super(Departure, self).__setstate__(source_dict)
-        self.departure_time = load_datetime(source_dict['plannedDateTime'], NS_DATETIME)
-
+        self.departure_time = load_datetime(
+            source_dict['plannedDateTime'], NS_DATETIME)
 
     def __str__(self):
         return '<Departure> trip_number: {0} {1} {2}'.format(self.trip_number, self.destination, self.departure_time_planned)
@@ -360,35 +372,53 @@ class TripStop(BaseObject):
     def __init__(self, part_dict=None):
         if part_dict is None:
             return
+
         self.name = part_dict['name']
-        try:
-            self.planned_time = load_datetime(part_dict['plannedDepartureDateTime'], NS_DATETIME)
-            self.key = simple_time(self.planned_time) + '_' + self.name
-        except TypeError:
-            # In some rare cases part_dict['Tijd'] can be None
-            #self.time = datetime(2000, 1, 1, 0, 0, 0)
+
+        if 'passing' in part_dict:
+            if part_dict['passing'] == True:
+                return
+
+        if 'plannedDepartureDateTime' in part_dict:
+            try:
+                self.planned_time = load_datetime(
+                    part_dict['plannedDepartureDateTime'], NS_DATETIME)
+                self.key = simple_time(self.planned_time) + '_' + self.name
+            except TypeError:
+                self.planned_time = None
+                self.planned_key = None
+        else:
             self.planned_time = None
             self.planned_key = None
-        try:
-            self.actual_time = load_datetime(part_dict['actualDepartureDateTime'], NS_DATETIME)
-            self.actual_key = simple_time(self.actual_time) + '_' + self.name
-        except TypeError:
-            # In some rare cases part_dict['Tijd'] can be None
-            #self.time = datetime(2000, 1, 1, 0, 0, 0)
+
+        if 'actualDepartureDateTime' in part_dict:
+            try:
+                self.actual_time = load_datetime(
+                    part_dict['actualDepartureDateTime'], NS_DATETIME)
+                self.actual_key = simple_time(
+                    self.actual_time) + '_' + self.name
+            except TypeError:
+                self.actual_time = None
+                self.planned_key = None
+        else:
             self.actual_time = None
             self.planned_key = None
+
         self.platform_changed = False
-        self.planned_platform = part_dict['plannedDepartureTrack']
-        try:
+        if 'plannedDepartureTrack' in part_dict:
+            self.planned_platform = part_dict['plannedDepartureTrack']
+
+        if 'actualDepartureTrack' in part_dict:
             self.actual_platform = part_dict['actualDepartureTrack']
             if self.actual_platform != self.planned_platform:
                 self.platform_changed = True
-        except KeyError:
-            self.platform_changed = False
-        try:
-            self.delay = self.actual_time - self.planned_time
-        except KeyError:
-            self.delay = None
+            else:
+                self.platform_changed = False
+        if self.actual_time is not None:
+            try:
+                self.delay = self.actual_time - self.planned_time
+            except KeyError:
+                self.delay = None
 
     def __getstate__(self):
         result = super(TripStop, self).__getstate__()
@@ -420,29 +450,43 @@ class TripSubpart(BaseObject):
         # OVERSTAP-NIET-MOGELIJK, VERTRAAGD, NIEUW (=extra trein)
         self.going = True
         self.has_delay = False
-        if  part_dict['cancelled'] == True:
+        if part_dict['cancelled'] == True:
             self.going = False
         if part_dict['punctuality'] != 100.0:
             self.has_delay = True
 
-
-        # self.stops = []
-        # raw_stops = part_dict['stops']
-        # for raw_stop in raw_stops:
-        #     stop = TripStop(raw_stop)
-        #     self.stops.append(stop)
+        self.stops = []
+        raw_stops = part_dict['stops']
+        for raw_stop in raw_stops:
+            stop = TripStop(raw_stop)
+            self.stops.append(stop)
 
     @property
     def destination(self):
         return self.stops[-1].name
 
     @property
-    def departure_time(self):
-        return self.stops[0].time
+    def departure(self):
+        return self.stops[0].name
 
+    @property
+    def departure_time_planned(self):
+        return self.stops[0].planned_time
+
+    @property
+    def departure_time_actual(self):
+        return self.stops[0].actual_time
+
+    @property
+    def arrival_time_planned(self):
+        return self.stops[-1].planned_time
+
+    @property
+    def arrival_time_actual(self):
+        return self.stops[-1].actual_time
 
     def has_departure_delay(self, arrival_check=True):
-        if arrival_check==False and self.has_delay:
+        if arrival_check == False and self.has_delay:
             # Check whether one or more stops have delay, except last one
             delay_found = False
             for stop in self.stops:
@@ -453,7 +497,6 @@ class TripSubpart(BaseObject):
                     return delay_found
         else:
             return self.has_delay
-
 
     def __getstate__(self):
         result = super(TripSubpart, self).__getstate__()
@@ -473,7 +516,7 @@ class TripSubpart(BaseObject):
         self.stops = trip_stops
 
     def __str__(self):
-        return '<TripSubpart> [{0}] {1} {2} {3} {4}'.format(self.going, self.journey_id, self.trip_type, self.transport_type, self.status)
+        return '<TripSubpart> [{0}] {1} {2} {3}'.format(self.going, self.journey_id, self.trip_type, self.transport_type)
 
 
 class Trip(BaseObject):
@@ -485,7 +528,6 @@ class Trip(BaseObject):
         if trip_dict is None:
             return
         # self.key = ??
-
         try:
             # VOLGENS-PLAN, GEWIJZIGD, VERTRAAGD, NIEUW, NIET-OPTIMAAL, NIET-MOGELIJK, PLAN-GEWIJZIGD
             self.status = trip_dict['status']
@@ -511,22 +553,26 @@ class Trip(BaseObject):
         self.requested_time = datetime
 
         try:
-            self.departure_time_planned = load_datetime(trip_dict['legs'][0]['origin']['plannedDateTime'], dt_format)
+            self.departure_time_planned = load_datetime(
+                trip_dict['legs'][0]['origin']['plannedDateTime'], dt_format)
         except:
             self.departure_time_planned = None
 
         try:
-            self.departure_time_actual = load_datetime(trip_dict['legs'][0]['origin']['actualDateTime'], dt_format)
+            self.departure_time_actual = load_datetime(
+                trip_dict['legs'][0]['origin']['actualDateTime'], dt_format)
         except:
             self.departure_time_actual = None
 
         try:
-            self.arrival_time_planned = load_datetime(trip_dict['legs'][(len(trip_dict['legs']) -1)]['destination']['plannedDateTime'], dt_format)
+            self.arrival_time_planned = load_datetime(
+                trip_dict['legs'][-1]['destination']['plannedDateTime'], dt_format)
         except:
             self.arrival_time_planned = None
 
         try:
-            self.arrival_time_actual = load_datetime(trip_dict['legs'][(len(trip_dict['legs']) -1)]['destination']['actualDateTime'], dt_format)
+            self.arrival_time_actual = load_datetime(
+                trip_dict['legs'][-1]['destination']['actualDateTime'], dt_format)
         except:
             self.arrival_time_actual = None
 
@@ -540,15 +586,14 @@ class Trip(BaseObject):
         except:
             self.departure_platform_actual = None
         try:
-            self.arrival_platform_planned = trip_dict['legs'][(len(trip_dict['legs']) -1)]['destination']['plannedTrack']
+            self.arrival_platform_planned = trip_dict['legs'][-1]['destination']['plannedTrack']
         except:
             self.arrival_platform_planned = None
 
         try:
-            self.arrival_platform_actual = trip_dict['legs'][(len(trip_dict['legs']) -1)]['destination']['actualTrack']
+            self.arrival_platform_actual = trip_dict['legs'][-1]['destination']['actualTrack']
         except:
             self.arrival_platform_actual = None
-
 
         self.trip_parts = []
         raw_parts = trip_dict['legs']
@@ -558,14 +603,13 @@ class Trip(BaseObject):
             trip_part = TripSubpart(part)
             self.trip_parts.append(trip_part)
 
-
     @property
     def departure(self):
-        return self.trip_parts[0]['stops'][0].name
+        return self.trip_parts[0].stops[0].name
 
     @property
     def destination(self):
-        return self.trip_parts[-1]['stops'][-1].name
+        return self.trip_parts[-1].stops[-1].name
 
     @property
     def delay(self):
@@ -573,9 +617,10 @@ class Trip(BaseObject):
         Return the delay of the train for this instance
         """
         delay = {'departure_time': None, 'departure_delay': None, 'requested_differs': None,
-            'parts': []}
-        if self.departure_time_actual > self.departure_time_planned:
-            delay['departure_delay'] = self.departure_time_actual - self.departure_time_planned
+                 'parts': []}
+        if self.departure_time_actual is not None and self.departure_time_actual > self.departure_time_planned:
+            delay['departure_delay'] = self.departure_time_actual - \
+                self.departure_time_planned
             delay['departure_time'] = self.departure_time_actual
         if self.requested_time != self.departure_time_actual:
             delay['requested_differs'] = self.departure_time_actual
@@ -593,18 +638,6 @@ class Trip(BaseObject):
                     # Is last part of the trip, check if it is only the arrival
                     return subpart.has_departure_delay(arrival_check)
                 return True
-        if self.requested_time != self.departure_time_actual:
-            return True
-        return False
-
-    def has_departure_delay(self, subpartcheck=True):
-        """
-        Deprecated
-        """
-        if self.status != 'NORMAL':
-            return True
-        if subpartcheck and self.trip_parts[0].has_delay:
-            return True
         if self.requested_time != self.departure_time_actual:
             return True
         return False
@@ -637,16 +670,16 @@ class Trip(BaseObject):
             subpart.from_json(part)
             trip_parts.append(subpart)
         self.trip_parts = trip_parts
-        # TripRemark deserialisation
-        trip_remarks = []
-        # remarks = self.trip_remarks
         # Datetime stamps
-        self.departure_time_planned = load_datetime(self.departure_time_planned, NS_DATETIME)
-        self.departure_time_actual = load_datetime(self.departure_time_actual, NS_DATETIME)
-        self.arrival_time_planned = load_datetime(self.arrival_time_planned, NS_DATETIME)
-        self.arrival_time_actual = load_datetime(self.arrival_time_actual, NS_DATETIME)
+        self.departure_time_planned = load_datetime(
+            self.departure_time_planned, NS_DATETIME)
+        self.departure_time_actual = load_datetime(
+            self.departure_time_actual, NS_DATETIME)
+        self.arrival_time_planned = load_datetime(
+            self.arrival_time_planned, NS_DATETIME)
+        self.arrival_time_actual = load_datetime(
+            self.arrival_time_actual, NS_DATETIME)
         self.requested_time = load_datetime(self.requested_time, NS_DATETIME)
-
 
     def delay_text(self):
         """
@@ -654,7 +687,6 @@ class Trip(BaseObject):
         """
         # TODO implement
         pass
-
 
     @classmethod
     def get_actual(cls, trip_list, time):
@@ -665,7 +697,6 @@ class Trip(BaseObject):
             if simple_time(trip.departure_time_planned) == time:
                 return trip
         return None
-
 
     @classmethod
     def get_optimal(cls, trip_list):
@@ -707,8 +738,8 @@ class NSAPI(object):
 
     def parse_disruptions(self, data):
         """
-        Parse the NS API xml result into Disruption objects
-        @param xml: raw XML result from the NS API
+        Parse the NS API json result into Disruption objects
+        @param data: raw json result from the NS API
         """
         obj = json.loads(data)
         disruptions = {}
@@ -717,31 +748,24 @@ class NSAPI(object):
         if obj['payload']:
             raw_disruptions = obj['payload']
             if isinstance(raw_disruptions, collections.OrderedDict):
-                    raw_disruptions = [raw_disruptions]
+                raw_disruptions = [raw_disruptions]
             for disruption in raw_disruptions:
-                if disruption['type'] == 'storing' or disruption['type'] == 'verstoring' :
+                if disruption['type'] == 'storing' or disruption['type'] == 'verstoring':
                     newdis = Disruption(disruption)
-                    #print(newdis.__dict__)
                     disruptions['unplanned'].append(newdis)
                 elif disruption['type'] == 'werkzaamheid':
                     newdis = Disruption(disruption)
-                    #print(newdis.__dict__)
                     disruptions['planned'].append(newdis)
         return disruptions
-
 
     def get_disruptions(self, station=None, actual=True, unplanned=True):
         """
         Fetch the current disruptions, or even the planned ones
         @param station: station to lookup
-        @param actual: only actual disruptions, or a
-
-        actuele storingen  (=ongeplande storingen + actuele werkzaamheden)
-        geplande werkzaamheden (=geplande werkzaamheden)
-        actuele storingen voor een gespecificeerd station (=ongeplande storingen + actuele werkzaamheden)
+        @param actual: only actual disruption
+        @param unplanned: only unplanned disruption
         """
 
-        
         if station == None:
             params = urllib.parse.urlencode({
                 # Request parameters
@@ -750,15 +774,15 @@ class NSAPI(object):
             })
             url = ("/public-reisinformatie/api/v2/disruptions?%s" % params)
         else:
-            url = ("/public-reisinformatie/api/v2/disruptions/station/%s?%s" % (station, params))
+            url = ("/public-reisinformatie/api/v2/disruptions/station/%s?%s" %
+                   (station, params))
         raw_disruptions = self._request('GET', url)
         return self.parse_disruptions(raw_disruptions)
 
-
     def parse_departures(self, data):
         """
-        Parse the NS API xml result into Departure objects
-        @param xml: raw XML result from the NS API
+        Parse the NS API json result into Departure objects
+        @param data: raw json result from the NS API
         """
         obj = json.loads(data)
         departures = []
@@ -766,13 +790,9 @@ class NSAPI(object):
         for departure in obj['payload']['departures']:
             newdep = Departure(departure)
             departures.append(newdep)
-            #print('-- dep --')
-            #print(newdep.__dict__)
-            #print(newdep.to_json())
             print((newdep.delay))
 
         return departures
-
 
     def get_departures(self, station=None, dateTime=None, maxJourneys='25', uicCode=None, source=None):
         """
@@ -784,19 +804,18 @@ class NSAPI(object):
         @param source: forces to use a certain source
         """
         params = urllib.parse.urlencode({
-        # Request parameters
-        'dateTime': dateTime,
-        'maxJourneys': maxJourneys,
-        'lang': 'nl',
-        'station': station,
-        'uicCode': uicCode,
-        'source': source,
+            # Request parameters
+            'dateTime': dateTime,
+            'maxJourneys': maxJourneys,
+            'lang': 'nl',
+            'station': station,
+            'uicCode': uicCode,
+            'source': source,
         })
         url = "/public-reisinformatie/api/v2/departures?%s" % params
 
         raw_departures = self._request('GET', url)
         return self.parse_departures(raw_departures)
-
 
     def parse_trips(self, data, requested_time):
         """
@@ -819,17 +838,17 @@ class NSAPI(object):
 
         return trips
 
-
     def get_trips(self, timestamp, start, via, destination, departure=True, prev_advices=1, next_advices=1):
         """
         Fetch trip possibilities for these parameters
         https://gateway.apiportal.ns.nl/public-reisinformatie/api/v3/trips<parameters>
-        fromStation
-        toStation
-        dateTime: 2012-02-21T15:50
-        departure: true for starting at timestamp, false for arriving at timestamp
-        previousAdvices
-        nextAdvices
+        @param timestamp:       departure time
+        @param start:           from station
+        @param via:             via station
+        @param destination:     Destination station
+        @param departure:       if false departure time works as requested arrival time
+        @param prev_advices:    number of previous advices
+        @param next_advices:    number of next advices
         """
         timezonestring = '+0100'
         if is_dst('Europe/Amsterdam'):
@@ -840,15 +859,17 @@ class NSAPI(object):
             timestamp = time.strftime("%Y-%m-%d") + 'T' + timestamp
             #requested_time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M")
             # TODO: DST/normal time
-            requested_time = load_datetime(timestamp + timezonestring, "%Y-%m-%dT%H:%M%z")
+            requested_time = load_datetime(
+                timestamp + timezonestring, "%Y-%m-%dT%H:%M%z")
         else:
             #requested_time = datetime.strptime(timestamp, "%d-%m-%Y %H:%M")
-            requested_time = load_datetime(timestamp + timezonestring, "%d-%m-%Y %H:%M%z")
-            timestamp = datetime.strptime(timestamp, "%d-%m-%Y %H:%M").strftime("%Y-%m-%dT%H:%M")
-
+            requested_time = load_datetime(
+                timestamp + timezonestring, "%d-%m-%Y %H:%M%z")
+            timestamp = datetime.strptime(
+                timestamp, "%d-%m-%Y %H:%M").strftime("%Y-%m-%dT%H:%M")
 
         params = urllib.parse.urlencode({
-            # Request parameters
+            # all possible Request parameters
             # 'originLat': '{string}',
             # 'originLng': '{string}',
             # 'destinationLat': '{string}',
@@ -896,11 +917,9 @@ class NSAPI(object):
             # 'minimalChangeTime': '{integer}',
         })
 
-
         url = "/public-reisinformatie/api/v3/trips?%s" % params
         raw_trips = self._request('GET', url)
         return self.parse_trips(raw_trips, requested_time)
-
 
     def parse_stations(self, data):
         obj = json.loads(data)
@@ -913,7 +932,6 @@ class NSAPI(object):
         print((len(stations)))
         return stations
 
-
     def get_stations(self):
         """
         Fetch the list of stations
@@ -921,4 +939,3 @@ class NSAPI(object):
         url = "/public-reisinformatie/api/v2/stations?%s" % params
         raw_stations = self._request('GET', url)
         return self.parse_stations(raw_stations)
-
