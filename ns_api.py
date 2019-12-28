@@ -3,14 +3,13 @@ Library to query the official Dutch railways API
 """
 
 import collections
+import http.client
 import json
 import time
-from datetime import datetime, timedelta
-
-import http.client
-import urllib.request
-import urllib.parse
 import urllib.error
+import urllib.parse
+import urllib.request
+from datetime import datetime, timedelta
 
 import pytz
 from future.utils import python_2_unicode_compatible
