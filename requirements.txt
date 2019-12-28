@@ -9,6 +9,4 @@ chardet==3.0.4            # via requests
 future==0.17.1
 idna==2.8                 # via requests
 pytz==2019.1
-requests==2.21.0
 urllib3==1.24.2           # via requests
-xmltodict==0.12.0
