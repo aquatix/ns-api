@@ -734,7 +734,9 @@ class NSAPI(object):
             return data
         except Exception as e:
             print("[Errno {0}] {1}".format(e.errno, e.strerror))
-    def parse_disruptions(self, data):
+
+    @staticmethod
+    def parse_disruptions(data):
         """
         Parse the NS API json result into Disruption objects
         @param data: raw json result from the NS API
@@ -815,7 +817,8 @@ class NSAPI(object):
         raw_departures = self._request('GET', url)
         return self.parse_departures(raw_departures)
 
-    def parse_trips(self, data, requested_time):
+    @staticmethod
+    def parse_trips(data, requested_time):
         """
         Parse the NS API xml result into Trip objects
         """
@@ -919,7 +922,8 @@ class NSAPI(object):
         raw_trips = self._request('GET', url)
         return self.parse_trips(raw_trips, requested_time)
 
-    def parse_stations(self, data):
+    @staticmethod
+    def parse_stations(data):
         obj = json.loads(data)
         stations = []
 
@@ -927,7 +931,6 @@ class NSAPI(object):
             newstat = Station(station)
             stations.append(newstat)
 
-        print((len(stations)))
         return stations
 
     def get_stations(self):
