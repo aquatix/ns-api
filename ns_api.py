@@ -2,7 +2,6 @@
 Library to query the official Dutch railways API
 """
 
-
 import collections
 import json
 import time
@@ -12,14 +11,13 @@ import http.client
 import urllib.request
 import urllib.parse
 import urllib.error
-import base64
 
 import pytz
 from future.utils import python_2_unicode_compatible
 from pytz.tzinfo import StaticTzInfo
 
 # ns-api library version
-__version__ = '2.8.0'
+__version__ = '3.0.0'
 
 
 # Date/time helpers
@@ -372,9 +370,8 @@ class TripStop(BaseObject):
 
         self.name = part_dict['name']
 
-        if 'passing' in part_dict:
-            if part_dict['passing'] == True:
-                return
+        if 'passing' in part_dict and part_dict['passing']:
+            return
 
         if 'plannedDepartureDateTime' in part_dict:
             try:
@@ -447,7 +444,7 @@ class TripSubpart(BaseObject):
         # OVERSTAP-NIET-MOGELIJK, VERTRAAGD, NIEUW (=extra trein)
         self.going = True
         self.has_delay = False
-        if part_dict['cancelled'] == True:
+        if part_dict['cancelled']:
             self.going = False
         if part_dict['punctuality'] != 100.0:
             self.has_delay = True
@@ -483,7 +480,7 @@ class TripSubpart(BaseObject):
         return self.stops[-1].actual_time
 
     def has_departure_delay(self, arrival_check=True):
-        if arrival_check == False and self.has_delay:
+        if not arrival_check and self.has_delay:
             # Check whether one or more stops have delay, except last one
             delay_found = False
             for stop in self.stops:
@@ -706,7 +703,12 @@ class Trip(BaseObject):
         return None
 
     def __str__(self):
-        return '<Trip> {0} plan: {1} actual: {2} transfers: {3}'.format(self.has_delay, self.departure_time_planned, self.departure_time_actual, self.nr_transfers)
+        return '<Trip> {0} plan: {1} actual: {2} transfers: {3}'.format(
+            self.has_delay,
+            self.departure_time_planned,
+            self.departure_time_actual,
+            self.nr_transfers
+        )
 
 
 class NSAPI(object):
@@ -762,7 +764,7 @@ class NSAPI(object):
         @param unplanned: only unplanned disruption
         """
 
-        if station == None:
+        if station is None:
             params = urllib.parse.urlencode({
                 # Request parameters
                 'actual': actual,
