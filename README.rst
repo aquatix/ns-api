@@ -68,7 +68,7 @@ and you will likely get it mailed to you (it might take some days).
    :target: https://pypi.python.org/pypi/nsapi/
 .. |PyPI license| image:: https://img.shields.io/github/license/aquatix/ns-api.svg
    :target: https://pypi.python.org/pypi/nsapi/
-.. |Code health| image:: https://landscape.io/github/aquatix/ns-api/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/aquatix/ns-api/master
+.. |Code health| image:: https://api.codacy.com/project/badge/Grade/84e8b4b9005b455c8977bb1d8dda2b64
+   :target: https://www.codacy.com/manual/aquatix/ns-api?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=aquatix/ns-api&amp;utm_campaign=Badge_Grade
    :alt: Code Health
 .. _ns-notifications: https://github.com/aquatix/ns-notifications

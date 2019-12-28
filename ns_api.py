@@ -98,7 +98,7 @@ def list_from_json(source_list_json):
     Deserialise all the items in source_list from json
     """
     result = []
-    if source_list_json == [] or source_list_json == None:
+    if source_list_json == [] or source_list_json is None:
         return result
     for list_item in source_list_json:
         item = json.loads(list_item)
@@ -135,7 +135,7 @@ def list_diff(list_a, list_b):
     """
     result = []
     for item in list_b:
-        if not item in list_a:
+        if item not in list_a:
             result.append(item)
     return result
 
@@ -165,7 +165,7 @@ def list_merge(list_a, list_b):
     #result = list(list_b)
     result = []
     for item in list_a:
-        if not item in result:
+        if item not in result:
             result.append(item)
     for item in list_b:
         if not item in result:
@@ -485,7 +485,7 @@ class TripSubpart(BaseObject):
             for stop in self.stops:
                 if stop.delay and stop:
                     delay_found = True
-                elif stop.delay == False and stop == self.stops[-1]:
+                elif not stop.delay and stop == self.stops[-1]:
                     # Last stop and it doesn't have a delay
                     return delay_found
         else:
