@@ -778,7 +778,8 @@ class NSAPI(object):
         raw_disruptions = self._request('GET', url)
         return self.parse_disruptions(raw_disruptions)
 
-    def parse_departures(self, data):
+    @staticmethod
+    def parse_departures(data):
         """
         Parse the NS API json result into Departure objects
         @param data: raw json result from the NS API
