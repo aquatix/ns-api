@@ -35,7 +35,7 @@ setup(
 
     # as a practice no need to hard code version unless you know program wont
     # work unless the specific versions are used
-    install_requires=['requests>=2.19.1', 'pytz>=2018.5', 'future'],
+    install_requires=['pytz>=2018.5', 'future'],
 
     #package_dir={'ns_api': ''},
     py_modules=['ns_api'],
