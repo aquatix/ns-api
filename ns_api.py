@@ -26,6 +26,7 @@ params = urllib.parse.urlencode({})
 # Date/time helpers
 NS_DATETIME = "%Y-%m-%dT%H:%M:%S%z"
 
+
 def datetime_to_string(timestamp, dt_format='%Y-%m-%d %H:%M:%S'):
     """
     Format datetime object to string

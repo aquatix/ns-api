@@ -5,18 +5,26 @@
 #    pip-compile requirements-dev.in
 #
 astroid==2.3.3            # via pylint
+autopep8==1.4.4
 blessings==1.7            # via curtsies
 bpython==0.18
 certifi==2019.11.28       # via requests
 chardet==3.0.4            # via requests
 curtsies==0.3.1           # via bpython
+entrypoints==0.3          # via flake8
+flake8-html==0.4.0
+flake8==3.7.9             # via flake8-html
 future==0.18.2
 greenlet==0.4.15          # via bpython
 idna==2.8                 # via requests
 isort==4.3.21             # via pylint
+jinja2==2.10.3            # via flake8-html
 lazy-object-proxy==1.4.3  # via astroid
-mccabe==0.6.1             # via pylint
-pygments==2.5.2           # via bpython
+markupsafe==1.1.1         # via jinja2
+mccabe==0.6.1             # via flake8, pylint
+pycodestyle==2.5.0        # via autopep8, flake8
+pyflakes==2.1.1           # via flake8
+pygments==2.5.2           # via bpython, flake8-html
 pylint==2.4.4
 pytz==2019.3
 requests==2.22.0          # via bpython
