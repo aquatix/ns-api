@@ -18,16 +18,16 @@ with file_open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='nsapi', # pip install nsapi
+    name='nsapi',  # pip install nsapi
     description='api wrapper for Dutch Railways (NS)',
-    #long_description=open('README.md', 'rt').read(),
+    # long_description=open('README.md', 'rt').read(),
     long_description=long_description,
 
     # version
     # third part for minor release
     # second when api changes
     # first when it becomes stable someday
-    version='3.0.0',
+    version='3.0.1',
     author='Michiel Scholten',
     author_email='michiel@diginaut.net',
 
@@ -38,7 +38,7 @@ setup(
     # work unless the specific versions are used
     install_requires=['pytz>=2018.5', 'future'],
 
-    #package_dir={'ns_api': ''},
+    # package_dir={'ns_api': ''},
     py_modules=['ns_api'],
     classifiers=[
         "Topic :: Software Development :: Libraries",
@@ -59,6 +59,6 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
-        ],
+    ],
     zip_safe=True,
 )
