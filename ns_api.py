@@ -119,8 +119,7 @@ def list_from_json(source_list_json):
             elif item['class_name'] == 'TripSubpart':
                 temp = TripSubpart()
             else:
-                print(('Unrecognised Class ' +
-                       item['class_name'] + ', skipping'))
+                print('Unrecognised Class {}, skipping'.format(item['class_name']))
                 continue
             temp.from_json(list_item)
             result.append(temp)
@@ -163,7 +162,6 @@ def list_merge(list_a, list_b):
       New list with deduplicated items from list_a and list_b
     """
     # return list(collections.OrderedDict.fromkeys(list_a + list_b))
-    #result = list(list_b)
     result = []
     for item in list_a:
         if item not in result:
@@ -204,7 +202,6 @@ class BaseObject(object):
         """
         Parse a JSON representation of this model back to, well, the model
         """
-        #source_dict = json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
         source_dict = json.JSONDecoder().decode(source_json)
         self.__setstate__(source_dict)
 
@@ -302,8 +299,8 @@ class Departure(BaseObject):
                 departure_dict['actualDateTime'], NS_DATETIME)
             if self.departure_time_actual is not None and self.departure_time_actual != self.departure_time_planned:
                 self.has_delay = True
-                delay = (self.departure_time_actual -
-                         self.departure_time_planned)
+                delay = (self.departure_time_actual
+                         - self.departure_time_planned)
                 self.delay = delay.seconds // 60 % 60
         except KeyError:
             self.has_delay = False
