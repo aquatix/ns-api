@@ -16,15 +16,15 @@ from future.utils import python_2_unicode_compatible
 from pytz.tzinfo import StaticTzInfo
 
 # ns-api library version
-__version__ = '3.0.0'
+__version__ = '3.0.1'
 
-
-# Date/time helpers
-NS_DATETIME = "%Y-%m-%dT%H:%M:%S%z"
 
 # set placeholder url params
 params = urllib.parse.urlencode({})
 
+
+# Date/time helpers
+NS_DATETIME = "%Y-%m-%dT%H:%M:%S%z"
 
 def datetime_to_string(timestamp, dt_format='%Y-%m-%d %H:%M:%S'):
     """
@@ -41,8 +41,8 @@ def simple_time(value):
         return ':'.join(str(value).split(':')[:2])
     return datetime_to_string(value, '%H:%M')
 
-# Timezone helpers
 
+# Timezone helpers
 
 def is_dst(zonename):
     """
@@ -168,7 +168,7 @@ def list_merge(list_a, list_b):
         if item not in result:
             result.append(item)
     for item in list_b:
-        if not item in result:
+        if item not in result:
             result.append(item)
     return result
 
@@ -265,6 +265,7 @@ class Disruption(BaseObject):
         self.key = part_dict['id']
         self.line = part_dict['titel']
         self.disruption = part_dict['verstoring']
+        self.timestamp = None
 
     def __getstate__(self):
         result = super(Disruption, self).__getstate__()
@@ -336,7 +337,11 @@ class Departure(BaseObject):
             source_dict['plannedDateTime'], NS_DATETIME)
 
     def __str__(self):
-        return '<Departure> trip_number: {0} {1} {2}'.format(self.trip_number, self.destination, self.departure_time_planned)
+        return '<Departure> trip_number: {0} {1} {2}'.format(
+            self.trip_number,
+            self.destination,
+            self.departure_time_planned
+        )
 
 
 class TripRemark(BaseObject):
@@ -488,8 +493,8 @@ class TripSubpart(BaseObject):
                 elif not stop.delay and stop == self.stops[-1]:
                     # Last stop and it doesn't have a delay
                     return delay_found
-        else:
-            return self.has_delay
+            return delay_found
+        return self.has_delay
 
     def __getstate__(self):
         result = super(TripSubpart, self).__getstate__()
@@ -509,7 +514,12 @@ class TripSubpart(BaseObject):
         self.stops = trip_stops
 
     def __str__(self):
-        return '<TripSubpart> [{0}] {1} {2} {3}'.format(self.going, self.journey_id, self.trip_type, self.transport_type)
+        return '<TripSubpart> [{0}] {1} {2} {3}'.format(
+            self.going,
+            self.journey_id,
+            self.trip_type,
+            self.transport_type
+        )
 
 
 class Trip(BaseObject):
@@ -732,7 +742,7 @@ class NSAPI(object):
             conn.close()
             return data
         except Exception as e:
-            print("[Errno {0}] {1}".format(e.errno, e.strerror))
+            print("Error during connection: {0}".format(e))
 
     @staticmethod
     def parse_disruptions(data):
