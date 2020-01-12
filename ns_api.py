@@ -563,7 +563,8 @@ class Trip(BaseObject):
             self.departure_time_actual = load_datetime(
                 trip_dict['legs'][0]['origin']['actualDateTime'], dt_format)
         except:
-            self.departure_time_actual = None
+            # Fall back to the planned time
+            self.departure_time_actual = self.departure_time_planned
 
         try:
             self.arrival_time_planned = load_datetime(
@@ -575,7 +576,8 @@ class Trip(BaseObject):
             self.arrival_time_actual = load_datetime(
                 trip_dict['legs'][-1]['destination']['actualDateTime'], dt_format)
         except:
-            self.arrival_time_actual = None
+            # Fall back to the planned time
+            self.arrival_time_actual = self.arrival_time_planned
 
         try:
             self.departure_platform_planned = trip_dict['legs'][0]['origin']['plannedTrack']
@@ -619,9 +621,8 @@ class Trip(BaseObject):
         """
         delay = {'departure_time': None, 'departure_delay': None, 'requested_differs': None,
                  'parts': []}
-        if self.departure_time_actual is not None and self.departure_time_actual > self.departure_time_planned:
-            delay['departure_delay'] = self.departure_time_actual - \
-                self.departure_time_planned
+        if self.departure_time_actual and self.departure_time_actual > self.departure_time_planned:
+            delay['departure_delay'] = self.departure_time_actual - self.departure_time_planned
             delay['departure_time'] = self.departure_time_actual
         if self.requested_time != self.departure_time_actual:
             delay['requested_differs'] = self.departure_time_actual
