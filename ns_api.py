@@ -587,7 +587,9 @@ class Trip(BaseObject):
         try:
             self.departure_platform_actual = trip_dict['legs'][0]['origin']['actualTrack']
         except:
-            self.departure_platform_actual = None
+            # Fall back to the planned platform
+            self.departure_platform_actual = self.departure_platform_planned
+        
         try:
             self.arrival_platform_planned = trip_dict['legs'][-1]['destination']['plannedTrack']
         except:
@@ -596,7 +598,8 @@ class Trip(BaseObject):
         try:
             self.arrival_platform_actual = trip_dict['legs'][-1]['destination']['actualTrack']
         except:
-            self.arrival_platform_actual = None
+            # Fall back to the planned platform
+            self.arrival_platform_actual = self.arrival_platform_planned
 
         self.trip_parts = []
         raw_parts = trip_dict['legs']
