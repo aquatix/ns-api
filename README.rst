@@ -42,10 +42,15 @@ in the same ``ns-notifications`` one mentioned in the project;
 ``ns-api`` will be installed through pip from
 `PyPI <https://pypi.python.org/pypi/nsapi>`__.
 
+Home Assistant
+~~~~~~~~~~~~~~
+
+The very useful `Home Assistant <https://www.home-assistant.io/>`_ home automation software `includes an integration for the ns-api <https://www.home-assistant.io/integrations/nederlandse_spoorwegen/>`_. Be sure to check it out.
+
 Also take a look at nsmaps
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Bart Römgens created `a fascinating contour map called nsmaps <https://github.com/bartromgens/nsmaps>`__ based on ns-api. It visualises Dutch railways travel information with OpenLayer 3 contour maps to show how long it takes to get somewhere in the Netherlands by train and bicycle.
+Bart Römgens created `a fascinating contour map called nsmaps <https://github.com/bartromgens/nsmaps>`_ based on ns-api. It visualises Dutch railways travel information with OpenLayer 3 contour maps to show how long it takes to get somewhere in the Netherlands by train and bicycle.
 
 Example application
 -------------------
@@ -58,9 +63,9 @@ NS API key
 ~~~~~~~~~~
 
 To actually be able to query the `Nederlandse Spoorwegen
-API <http://www.ns.nl/api/api>`__, you `need to request a
-key <https://www.ns.nl/ews-aanvraagformulier/>`__. Provide a good reason
-and you will likely get it mailed to you (it might take some days).
+API <https://apiportal.ns.nl/>`_, you `need to subscribe
+<https://apiportal.ns.nl/products/NsApp>`_. This immediately
+gives you a primary and secundary key you need for access.
 
 .. |PyPI version| image:: https://img.shields.io/pypi/v/nsapi.svg
    :target: https://pypi.python.org/pypi/nsapi/
