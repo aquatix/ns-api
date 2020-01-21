@@ -172,7 +172,7 @@ def list_merge(list_a, list_b):
 
 
 # NS API objects
-class BaseObject(object):
+class BaseObject:
     """
     Base object with useful functions
     """
@@ -221,7 +221,7 @@ class Station(BaseObject):
     def __init__(self, stat_dict=None):
         if stat_dict is None:
             return
-        self.EVACode = stat_dict['EVACode']
+        self.eva_code = stat_dict['EVACode']
         self.code = stat_dict['code']
         self.uic_code = stat_dict['UICCode']
         self.stationtype = stat_dict['stationType']
@@ -234,9 +234,9 @@ class Station(BaseObject):
         self.lat = stat_dict['lat']
         self.lon = stat_dict['lng']
         self.synonyms = []
-        self.hasFacilities = stat_dict['heeftFaciliteiten']
-        self.hasTravelAssistance = stat_dict['heeftReisassistentie']
-        self.hasDepartureTimes = stat_dict['heeftVertrektijden']
+        self.has_facilities = stat_dict['heeftFaciliteiten']
+        self.has_travel_assistance = stat_dict['heeftReisassistentie']
+        self.has_departure_times = stat_dict['heeftVertrektijden']
         try:
             raw_synonyms = stat_dict['synoniemen']
             if isinstance(raw_synonyms, str):
@@ -289,6 +289,7 @@ class Departure(BaseObject):
         self.trip_number = departure_dict['product']['number']
         self.departure_time_planned = load_datetime(
             departure_dict['plannedDateTime'], NS_DATETIME)
+        self.departure_time = self.departure_time_planned  # Default to the planned time
         self.departure_status = departure_dict['departureStatus']
         self.cancelled = departure_dict['cancelled']
         self.delay = 0
@@ -384,6 +385,7 @@ class TripStop(BaseObject):
         else:
             self.planned_time = None
             self.planned_key = None
+        self.time = self.planned_time  # Default to planned time
 
         if 'actualDepartureDateTime' in part_dict:
             try:
@@ -404,10 +406,7 @@ class TripStop(BaseObject):
 
         if 'actualDepartureTrack' in part_dict:
             self.actual_platform = part_dict['actualDepartureTrack']
-            if self.actual_platform != self.planned_platform:
-                self.platform_changed = True
-            else:
-                self.platform_changed = False
+            self.platform_changed = bool(self.actual_platform != self.planned_platform)
         if self.actual_time is not None:
             try:
                 self.delay = self.actual_time - self.planned_time
@@ -523,7 +522,7 @@ class Trip(BaseObject):
     Suggested route for the provided departure/destination combination
     """
 
-    def __init__(self, trip_dict=None, datetime=None):
+    def __init__(self, trip_dict=None, trip_datetime=None):
         if trip_dict is None:
             return
         # self.key = ??
@@ -549,7 +548,7 @@ class Trip(BaseObject):
 
         dt_format = "%Y-%m-%dT%H:%M:%S%z"
 
-        self.requested_time = datetime
+        self.requested_time = trip_datetime
 
         try:
             self.departure_time_planned = load_datetime(
@@ -692,12 +691,12 @@ class Trip(BaseObject):
         pass
 
     @classmethod
-    def get_actual(cls, trip_list, time):
+    def get_actual(cls, trip_list, trip_time):
         """
         Look for the train actually leaving at time
         """
         for trip in trip_list:
-            if simple_time(trip.departure_time_planned) == time:
+            if simple_time(trip.departure_time_planned) == trip_time:
                 return trip
         return None
 
@@ -720,19 +719,19 @@ class Trip(BaseObject):
         )
 
 
-class NSAPI(object):
+class NSAPI:
     """
     NS API object
     Library to query the official Dutch railways API
     """
 
-    def __init__(self, subscriptionKey):
-        self.subscriptionKey = subscriptionKey
+    def __init__(self, subscription_key):
+        self.subscription_key = subscription_key
 
     def _request(self, method, url, postdata=None, params=None):
         headers = {
             # Request headers
-            'Ocp-Apim-Subscription-Key': self.subscriptionKey,
+            'Ocp-Apim-Subscription-Key': self.subscription_key,
         }
         try:
             conn = http.client.HTTPSConnection('gateway.apiportal.ns.nl')
@@ -804,7 +803,7 @@ class NSAPI(object):
 
         return departures
 
-    def get_departures(self, station=None, dateTime=None, maxJourneys='25', uicCode=None, source=None):
+    def get_departures(self, station=None, for_datetime=None, max_journeys='25', uic_code=None, source=None):
         """
         Fetch the current departure times from this station
         @param station: station to lookup
@@ -815,11 +814,11 @@ class NSAPI(object):
         """
         params = urllib.parse.urlencode({
             # Request parameters
-            'dateTime': dateTime,
-            'maxJourneys': maxJourneys,
+            'dateTime': for_datetime,
+            'maxJourneys': max_journeys,
             'lang': 'nl',
             'station': station,
-            'uicCode': uicCode,
+            'uicCode': uic_code,
             'source': source,
         })
         url = "/reisinformatie-api/api/v2/departures?%s" % params
