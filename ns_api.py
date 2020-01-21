@@ -780,9 +780,9 @@ class NSAPI(object):
                 'actual': actual,
                 'lang': 'nl',
             })
-            url = ("/public-reisinformatie/api/v2/disruptions?%s" % params)
+            url = ("/reisinformatie-api/api/v2/disruptions?%s" % params)
         else:
-            url = ("/public-reisinformatie/api/v2/disruptions/station/%s?%s" %
+            url = ("/reisinformatie-api/api/v2/disruptions/station/%s?%s" %
                    (station, params))
         raw_disruptions = self._request('GET', url)
         return self.parse_disruptions(raw_disruptions)
@@ -821,7 +821,7 @@ class NSAPI(object):
             'uicCode': uicCode,
             'source': source,
         })
-        url = "/public-reisinformatie/api/v2/departures?%s" % params
+        url = "/reisinformatie-api/api/v2/departures?%s" % params
 
         raw_departures = self._request('GET', url)
         return self.parse_departures(raw_departures)
@@ -851,7 +851,7 @@ class NSAPI(object):
     def get_trips(self, timestamp, start, via, destination, departure=True, prev_advices=1, next_advices=1):
         """
         Fetch trip possibilities for these parameters
-        https://gateway.apiportal.ns.nl/public-reisinformatie/api/v3/trips<parameters>
+        https://gateway.apiportal.ns.nl/reisinformatie-api/api/v3/trips<parameters>
         @param timestamp:       departure time
         @param start:           from station
         @param via:             via station
@@ -927,7 +927,7 @@ class NSAPI(object):
             # 'minimalChangeTime': '{integer}',
         })
 
-        url = "/public-reisinformatie/api/v3/trips?%s" % params
+        url = "/reisinformatie-api/api/v3/trips?%s" % params
         raw_trips = self._request('GET', url)
         return self.parse_trips(raw_trips, requested_time)
 
@@ -946,6 +946,6 @@ class NSAPI(object):
         """
         Fetch the list of stations
         """
-        url = "/public-reisinformatie/api/v2/stations?%s" % params
+        url = "/reisinformatie-api/api/v2/stations?%s" % params
         raw_stations = self._request('GET', url)
         return self.parse_stations(raw_stations)
