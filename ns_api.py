@@ -12,7 +12,6 @@ import urllib.request
 from datetime import datetime, timedelta
 
 import pytz
-from future.utils import python_2_unicode_compatible
 from pytz.tzinfo import StaticTzInfo
 
 # ns-api library version
@@ -173,7 +172,6 @@ def list_merge(list_a, list_b):
 
 
 # NS API objects
-@python_2_unicode_compatible
 class BaseObject(object):
     """
     Base object with useful functions
