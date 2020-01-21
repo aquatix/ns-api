@@ -589,7 +589,7 @@ class Trip(BaseObject):
         except:
             # Fall back to the planned platform
             self.departure_platform_actual = self.departure_platform_planned
-        
+
         try:
             self.arrival_platform_planned = trip_dict['legs'][-1]['destination']['plannedTrack']
         except:
