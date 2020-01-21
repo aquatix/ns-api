@@ -292,7 +292,7 @@ class Departure(BaseObject):
         self.departure_time_planned = load_datetime(
             departure_dict['plannedDateTime'], NS_DATETIME)
         self.departure_status = departure_dict['departureStatus']
-        self.cancled = departure_dict['cancelled']
+        self.cancelled = departure_dict['cancelled']
         self.delay = 0
         try:
             self.departure_time_actual = load_datetime(
