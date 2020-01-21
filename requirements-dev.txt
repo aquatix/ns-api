@@ -5,7 +5,7 @@
 #    pip-compile requirements-dev.in
 #
 astroid==2.3.3            # via pylint
-autopep8==1.4.4
+autopep8==1.5
 blessings==1.7            # via curtsies
 bpython==0.18
 certifi==2019.11.28       # via requests
@@ -28,8 +28,8 @@ pygments==2.5.2           # via bpython, flake8-html
 pylint==2.4.4
 pytz==2019.3
 requests==2.22.0          # via bpython
-six==1.13.0               # via astroid, blessings, bpython
-typed-ast==1.4.0          # via astroid
+six==1.14.0               # via astroid, blessings, bpython
+typed-ast==1.4.1          # via astroid
 urllib3==1.25.7           # via requests
 wcwidth==0.1.8            # via curtsies
 wrapt==1.11.2             # via astroid
