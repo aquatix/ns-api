@@ -5,7 +5,7 @@ nsapi
 Query the Dutch railways about your routes, getting info on delays and
 more. See below for the syntax and example output.
 
-|PyPI version| |PyPI downloads| |PyPI license| |Code health|
+|PyPI version| |PyPI downloads| |PyPI license| |Code health| |Git version|
 
 Installation
 ------------
@@ -76,4 +76,7 @@ gives you a primary and secundary key you need for access.
 .. |Code health| image:: https://api.codacy.com/project/badge/Grade/84e8b4b9005b455c8977bb1d8dda2b64
    :target: https://www.codacy.com/manual/aquatix/ns-api?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=aquatix/ns-api&amp;utm_campaign=Badge_Grade
    :alt: Code Health
+.. |Git version| image:: https://img.shields.io/github/commits-since/aquatix/ns-api/latest
+   :target: https://github.com/aquatix/ns-api
+   :alt: GitHub commits since latest release
 .. _ns-notifications: https://github.com/aquatix/ns-notifications
