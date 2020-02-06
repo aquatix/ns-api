@@ -445,7 +445,7 @@ class TripSubpart(BaseObject):
         self.has_delay = False
         if part_dict['cancelled']:
             self.going = False
-        if part_dict['punctuality'] != 100.0:
+        if 'punctuality' in part_dict and part_dict['punctuality'] != 100.0:
             self.has_delay = True
 
         self.stops = []
@@ -635,7 +635,7 @@ class Trip(BaseObject):
         if self.status != 'NORMAL':
             return True
         for subpart in self.trip_parts:
-            if subpart['punctuality'] != 100.0:
+            if 'punctuality' in subpart and subpart['punctuality'] != 100.0:
                 if subpart == self.trip_parts[-1]:
                     # Is last part of the trip, check if it is only the arrival
                     return subpart.has_departure_delay(arrival_check)
