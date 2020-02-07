@@ -25,8 +25,10 @@ params = urllib.parse.urlencode({})
 # Date/time helpers
 NS_DATETIME = "%Y-%m-%dT%H:%M:%S%z"
 
+
 def datetime_to_string(timestamp, dt_format='%Y-%m-%d %H:%M:%S'):
     """
+    Format datetime object to string
     """
     return timestamp.strftime(dt_format)
 
@@ -38,6 +40,7 @@ def simple_time(value):
     if isinstance(value, timedelta):
         return ':'.join(str(value).split(':')[:2])
     return datetime_to_string(value, '%H:%M')
+
 
 # Timezone helpers
 
@@ -599,8 +602,12 @@ class Trip(BaseObject):
         raw_parts = trip_dict['legs']
         if isinstance(trip_dict['legs'], collections.OrderedDict):
             raw_parts = [trip_dict['legs']]
+        for part in raw_parts:
+            trip_part = TripSubpart(part)
+            self.trip_parts.append(trip_part)
 
     @property
+    def departure(self):
         return self.trip_parts[0].stops[0].name
 
     @property
