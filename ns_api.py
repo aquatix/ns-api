@@ -368,7 +368,6 @@ class TripStop(BaseObject):
     def __init__(self, part_dict=None):
         if part_dict is None:
             return
-
         self.name = part_dict['name']
 
         if 'passing' in part_dict and part_dict['passing']:
@@ -445,8 +444,6 @@ class TripSubpart(BaseObject):
         self.has_delay = False
         if part_dict['cancelled']:
             self.going = False
-        if 'punctuality' in part_dict and part_dict['punctuality'] != 100.0:
-            self.has_delay = True
 
         self.stops = []
         raw_stops = part_dict['stops']
@@ -561,7 +558,7 @@ class Trip(BaseObject):
                 trip_dict['legs'][0]['origin']['actualDateTime'], dt_format)
         except:
             # Fall back to the planned time
-            self.departure_time_actual = self.departure_time_planned
+            self.departure_time_actual = None
 
         try:
             self.arrival_time_planned = load_datetime(
@@ -574,7 +571,7 @@ class Trip(BaseObject):
                 trip_dict['legs'][-1]['destination']['actualDateTime'], dt_format)
         except:
             # Fall back to the planned time
-            self.arrival_time_actual = self.arrival_time_planned
+            self.arrival_time_actual = None
 
         try:
             self.departure_platform_planned = trip_dict['legs'][0]['origin']['plannedTrack']
@@ -634,12 +631,6 @@ class Trip(BaseObject):
     def has_delay(self, arrival_check=True):
         if self.status != 'NORMAL':
             return True
-        for subpart in self.trip_parts:
-            if 'punctuality' in subpart and subpart['punctuality'] != 100.0:
-                if subpart == self.trip_parts[-1]:
-                    # Is last part of the trip, check if it is only the arrival
-                    return subpart.has_departure_delay(arrival_check)
-                return True
         if self.requested_time != self.departure_time_actual:
             return True
         return False
