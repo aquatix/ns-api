@@ -940,3 +940,4 @@ class NSAPI:
         url = "/reisinformatie-api/api/v2/stations?%s" % params
         raw_stations = self._request('GET', url)
         return self.parse_stations(raw_stations)
+        
