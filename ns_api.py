@@ -2,36 +2,31 @@
 Library to query the official Dutch railways API
 """
 
-
 import collections
+import http.client
 import json
 import time
+import urllib.error
+import urllib.parse
+import urllib.request
 from datetime import datetime, timedelta
 
-import http.client
-import urllib.request
-import urllib.parse
-import urllib.error
-import base64
-
 import pytz
-from future.utils import python_2_unicode_compatible
 from pytz.tzinfo import StaticTzInfo
 
 # ns-api library version
-__version__ = '2.8.0'
+__version__ = '3.0.2'
 
-
-# Date/time helpers
-NS_DATETIME = "%Y-%m-%dT%H:%M:%S%z"
 
 # set placeholder url params
 params = urllib.parse.urlencode({})
 
 
+# Date/time helpers
+NS_DATETIME = "%Y-%m-%dT%H:%M:%S%z"
+
 def datetime_to_string(timestamp, dt_format='%Y-%m-%d %H:%M:%S'):
     """
-    Format datetime object to string
     """
     return timestamp.strftime(dt_format)
 
@@ -45,7 +40,6 @@ def simple_time(value):
     return datetime_to_string(value, '%H:%M')
 
 # Timezone helpers
-
 
 def is_dst(zonename):
     """
@@ -101,7 +95,7 @@ def list_from_json(source_list_json):
     Deserialise all the items in source_list from json
     """
     result = []
-    if source_list_json == [] or source_list_json == None:
+    if source_list_json == [] or source_list_json is None:
         return result
     for list_item in source_list_json:
         item = json.loads(list_item)
@@ -121,8 +115,7 @@ def list_from_json(source_list_json):
             elif item['class_name'] == 'TripSubpart':
                 temp = TripSubpart()
             else:
-                print(('Unrecognised Class ' +
-                       item['class_name'] + ', skipping'))
+                print('Unrecognised Class {}, skipping'.format(item['class_name']))
                 continue
             temp.from_json(list_item)
             result.append(temp)
@@ -138,7 +131,7 @@ def list_diff(list_a, list_b):
     """
     result = []
     for item in list_b:
-        if not item in list_a:
+        if item not in list_a:
             result.append(item)
     return result
 
@@ -165,20 +158,18 @@ def list_merge(list_a, list_b):
       New list with deduplicated items from list_a and list_b
     """
     # return list(collections.OrderedDict.fromkeys(list_a + list_b))
-    #result = list(list_b)
     result = []
     for item in list_a:
-        if not item in result:
+        if item not in result:
             result.append(item)
     for item in list_b:
-        if not item in result:
+        if item not in result:
             result.append(item)
     return result
 
 
 # NS API objects
-@python_2_unicode_compatible
-class BaseObject(object):
+class BaseObject:
     """
     Base object with useful functions
     """
@@ -206,7 +197,6 @@ class BaseObject(object):
         """
         Parse a JSON representation of this model back to, well, the model
         """
-        #source_dict = json.JSONDecoder(object_pairs_hook=collections.OrderedDict).decode(source_json)
         source_dict = json.JSONDecoder().decode(source_json)
         self.__setstate__(source_dict)
 
@@ -228,7 +218,7 @@ class Station(BaseObject):
     def __init__(self, stat_dict=None):
         if stat_dict is None:
             return
-        self.EVACode = stat_dict['EVACode']
+        self.eva_code = stat_dict['EVACode']
         self.code = stat_dict['code']
         self.uic_code = stat_dict['UICCode']
         self.stationtype = stat_dict['stationType']
@@ -241,9 +231,9 @@ class Station(BaseObject):
         self.lat = stat_dict['lat']
         self.lon = stat_dict['lng']
         self.synonyms = []
-        self.hasFacilities = stat_dict['heeftFaciliteiten']
-        self.hasTravelAssistance = stat_dict['heeftReisassistentie']
-        self.hasDepartureTimes = stat_dict['heeftVertrektijden']
+        self.has_facilities = stat_dict['heeftFaciliteiten']
+        self.has_travel_assistance = stat_dict['heeftReisassistentie']
+        self.has_departure_times = stat_dict['heeftVertrektijden']
         try:
             raw_synonyms = stat_dict['synoniemen']
             if isinstance(raw_synonyms, str):
@@ -268,6 +258,7 @@ class Disruption(BaseObject):
         self.key = part_dict['id']
         self.line = part_dict['titel']
         self.disruption = part_dict['verstoring']
+        self.timestamp = None
 
     def __getstate__(self):
         result = super(Disruption, self).__getstate__()
@@ -295,16 +286,17 @@ class Departure(BaseObject):
         self.trip_number = departure_dict['product']['number']
         self.departure_time_planned = load_datetime(
             departure_dict['plannedDateTime'], NS_DATETIME)
+        self.departure_time = self.departure_time_planned  # Default to the planned time
         self.departure_status = departure_dict['departureStatus']
-        self.cancled = departure_dict['cancelled']
+        self.cancelled = departure_dict['cancelled']
         self.delay = 0
         try:
             self.departure_time_actual = load_datetime(
                 departure_dict['actualDateTime'], NS_DATETIME)
             if self.departure_time_actual is not None and self.departure_time_actual != self.departure_time_planned:
                 self.has_delay = True
-                delay = (self.departure_time_actual -
-                         self.departure_time_planned)
+                delay = (self.departure_time_actual
+                         - self.departure_time_planned)
                 self.delay = delay.seconds // 60 % 60
         except KeyError:
             self.has_delay = False
@@ -339,7 +331,11 @@ class Departure(BaseObject):
             source_dict['plannedDateTime'], NS_DATETIME)
 
     def __str__(self):
-        return '<Departure> trip_number: {0} {1} {2}'.format(self.trip_number, self.destination, self.departure_time_planned)
+        return '<Departure> trip_number: {0} {1} {2}'.format(
+            self.trip_number,
+            self.destination,
+            self.departure_time_planned
+        )
 
 
 class TripRemark(BaseObject):
@@ -372,9 +368,8 @@ class TripStop(BaseObject):
 
         self.name = part_dict['name']
 
-        if 'passing' in part_dict:
-            if part_dict['passing'] == True:
-                return
+        if 'passing' in part_dict and part_dict['passing']:
+            return
 
         if 'plannedDepartureDateTime' in part_dict:
             try:
@@ -387,6 +382,7 @@ class TripStop(BaseObject):
         else:
             self.planned_time = None
             self.planned_key = None
+        self.time = self.planned_time  # Default to planned time
 
         if 'actualDepartureDateTime' in part_dict:
             try:
@@ -407,10 +403,7 @@ class TripStop(BaseObject):
 
         if 'actualDepartureTrack' in part_dict:
             self.actual_platform = part_dict['actualDepartureTrack']
-            if self.actual_platform != self.planned_platform:
-                self.platform_changed = True
-            else:
-                self.platform_changed = False
+            self.platform_changed = bool(self.actual_platform != self.planned_platform)
         if self.actual_time is not None:
             try:
                 self.delay = self.actual_time - self.planned_time
@@ -447,9 +440,9 @@ class TripSubpart(BaseObject):
         # OVERSTAP-NIET-MOGELIJK, VERTRAAGD, NIEUW (=extra trein)
         self.going = True
         self.has_delay = False
-        if part_dict['cancelled'] == True:
+        if part_dict['cancelled']:
             self.going = False
-        if part_dict['punctuality'] != 100.0:
+        if 'punctuality' in part_dict and part_dict['punctuality'] != 100.0:
             self.has_delay = True
 
         self.stops = []
@@ -483,17 +476,17 @@ class TripSubpart(BaseObject):
         return self.stops[-1].actual_time
 
     def has_departure_delay(self, arrival_check=True):
-        if arrival_check == False and self.has_delay:
+        if not arrival_check and self.has_delay:
             # Check whether one or more stops have delay, except last one
             delay_found = False
             for stop in self.stops:
                 if stop.delay and stop:
                     delay_found = True
-                elif stop.delay == False and stop == self.stops[-1]:
+                elif not stop.delay and stop == self.stops[-1]:
                     # Last stop and it doesn't have a delay
                     return delay_found
-        else:
-            return self.has_delay
+            return delay_found
+        return self.has_delay
 
     def __getstate__(self):
         result = super(TripSubpart, self).__getstate__()
@@ -513,7 +506,12 @@ class TripSubpart(BaseObject):
         self.stops = trip_stops
 
     def __str__(self):
-        return '<TripSubpart> [{0}] {1} {2} {3}'.format(self.going, self.journey_id, self.trip_type, self.transport_type)
+        return '<TripSubpart> [{0}] {1} {2} {3}'.format(
+            self.going,
+            self.journey_id,
+            self.trip_type,
+            self.transport_type
+        )
 
 
 class Trip(BaseObject):
@@ -521,7 +519,7 @@ class Trip(BaseObject):
     Suggested route for the provided departure/destination combination
     """
 
-    def __init__(self, trip_dict=None, datetime=None):
+    def __init__(self, trip_dict=None, trip_datetime=None):
         if trip_dict is None:
             return
         # self.key = ??
@@ -547,7 +545,7 @@ class Trip(BaseObject):
 
         dt_format = "%Y-%m-%dT%H:%M:%S%z"
 
-        self.requested_time = datetime
+        self.requested_time = trip_datetime
 
         try:
             self.departure_time_planned = load_datetime(
@@ -559,7 +557,8 @@ class Trip(BaseObject):
             self.departure_time_actual = load_datetime(
                 trip_dict['legs'][0]['origin']['actualDateTime'], dt_format)
         except:
-            self.departure_time_actual = None
+            # Fall back to the planned time
+            self.departure_time_actual = self.departure_time_planned
 
         try:
             self.arrival_time_planned = load_datetime(
@@ -571,7 +570,8 @@ class Trip(BaseObject):
             self.arrival_time_actual = load_datetime(
                 trip_dict['legs'][-1]['destination']['actualDateTime'], dt_format)
         except:
-            self.arrival_time_actual = None
+            # Fall back to the planned time
+            self.arrival_time_actual = self.arrival_time_planned
 
         try:
             self.departure_platform_planned = trip_dict['legs'][0]['origin']['plannedTrack']
@@ -581,7 +581,9 @@ class Trip(BaseObject):
         try:
             self.departure_platform_actual = trip_dict['legs'][0]['origin']['actualTrack']
         except:
-            self.departure_platform_actual = None
+            # Fall back to the planned platform
+            self.departure_platform_actual = self.departure_platform_planned
+
         try:
             self.arrival_platform_planned = trip_dict['legs'][-1]['destination']['plannedTrack']
         except:
@@ -590,18 +592,15 @@ class Trip(BaseObject):
         try:
             self.arrival_platform_actual = trip_dict['legs'][-1]['destination']['actualTrack']
         except:
-            self.arrival_platform_actual = None
+            # Fall back to the planned platform
+            self.arrival_platform_actual = self.arrival_platform_planned
 
         self.trip_parts = []
         raw_parts = trip_dict['legs']
         if isinstance(trip_dict['legs'], collections.OrderedDict):
             raw_parts = [trip_dict['legs']]
-        for part in raw_parts:
-            trip_part = TripSubpart(part)
-            self.trip_parts.append(trip_part)
 
     @property
-    def departure(self):
         return self.trip_parts[0].stops[0].name
 
     @property
@@ -615,9 +614,8 @@ class Trip(BaseObject):
         """
         delay = {'departure_time': None, 'departure_delay': None, 'requested_differs': None,
                  'parts': []}
-        if self.departure_time_actual is not None and self.departure_time_actual > self.departure_time_planned:
-            delay['departure_delay'] = self.departure_time_actual - \
-                self.departure_time_planned
+        if self.departure_time_actual and self.departure_time_actual > self.departure_time_planned:
+            delay['departure_delay'] = self.departure_time_actual - self.departure_time_planned
             delay['departure_time'] = self.departure_time_actual
         if self.requested_time != self.departure_time_actual:
             delay['requested_differs'] = self.departure_time_actual
@@ -630,7 +628,7 @@ class Trip(BaseObject):
         if self.status != 'NORMAL':
             return True
         for subpart in self.trip_parts:
-            if subpart['punctuality'] != 100.0:
+            if 'punctuality' in subpart and subpart['punctuality'] != 100.0:
                 if subpart == self.trip_parts[-1]:
                     # Is last part of the trip, check if it is only the arrival
                     return subpart.has_departure_delay(arrival_check)
@@ -686,12 +684,12 @@ class Trip(BaseObject):
         pass
 
     @classmethod
-    def get_actual(cls, trip_list, time):
+    def get_actual(cls, trip_list, trip_time):
         """
         Look for the train actually leaving at time
         """
         for trip in trip_list:
-            if simple_time(trip.departure_time_planned) == time:
+            if simple_time(trip.departure_time_planned) == trip_time:
                 return trip
         return None
 
@@ -706,22 +704,27 @@ class Trip(BaseObject):
         return None
 
     def __str__(self):
-        return '<Trip> {0} plan: {1} actual: {2} transfers: {3}'.format(self.has_delay, self.departure_time_planned, self.departure_time_actual, self.nr_transfers)
+        return '<Trip> {0} plan: {1} actual: {2} transfers: {3}'.format(
+            self.has_delay,
+            self.departure_time_planned,
+            self.departure_time_actual,
+            self.nr_transfers
+        )
 
 
-class NSAPI(object):
+class NSAPI:
     """
     NS API object
     Library to query the official Dutch railways API
     """
 
-    def __init__(self, subscriptionKey):
-        self.subscriptionKey = subscriptionKey
+    def __init__(self, subscription_key):
+        self.subscription_key = subscription_key
 
     def _request(self, method, url, postdata=None, params=None):
         headers = {
             # Request headers
-            'Ocp-Apim-Subscription-Key': self.subscriptionKey,
+            'Ocp-Apim-Subscription-Key': self.subscription_key,
         }
         try:
             conn = http.client.HTTPSConnection('gateway.apiportal.ns.nl')
@@ -731,8 +734,10 @@ class NSAPI(object):
             conn.close()
             return data
         except Exception as e:
-            print("[Errno {0}] {1}".format(e.errno, e.strerror))
-    def parse_disruptions(self, data):
+            print("Error during connection: {0}".format(e))
+
+    @staticmethod
+    def parse_disruptions(data):
         """
         Parse the NS API json result into Disruption objects
         @param data: raw json result from the NS API
@@ -762,20 +767,21 @@ class NSAPI(object):
         @param unplanned: only unplanned disruption
         """
 
-        if station == None:
+        if station is None:
             params = urllib.parse.urlencode({
                 # Request parameters
                 'actual': actual,
                 'lang': 'nl',
             })
-            url = ("/public-reisinformatie/api/v2/disruptions?%s" % params)
+            url = ("/reisinformatie-api/api/v2/disruptions?%s" % params)
         else:
-            url = ("/public-reisinformatie/api/v2/disruptions/station/%s?%s" %
+            url = ("/reisinformatie-api/api/v2/disruptions/station/%s?%s" %
                    (station, params))
         raw_disruptions = self._request('GET', url)
         return self.parse_disruptions(raw_disruptions)
 
-    def parse_departures(self, data):
+    @staticmethod
+    def parse_departures(data):
         """
         Parse the NS API json result into Departure objects
         @param data: raw json result from the NS API
@@ -790,7 +796,7 @@ class NSAPI(object):
 
         return departures
 
-    def get_departures(self, station=None, dateTime=None, maxJourneys='25', uicCode=None, source=None):
+    def get_departures(self, station=None, for_datetime=None, max_journeys='25', uic_code=None, source=None):
         """
         Fetch the current departure times from this station
         @param station: station to lookup
@@ -801,19 +807,20 @@ class NSAPI(object):
         """
         params = urllib.parse.urlencode({
             # Request parameters
-            'dateTime': dateTime,
-            'maxJourneys': maxJourneys,
+            'dateTime': for_datetime,
+            'maxJourneys': max_journeys,
             'lang': 'nl',
             'station': station,
-            'uicCode': uicCode,
+            'uicCode': uic_code,
             'source': source,
         })
-        url = "/public-reisinformatie/api/v2/departures?%s" % params
+        url = "/reisinformatie-api/api/v2/departures?%s" % params
 
         raw_departures = self._request('GET', url)
         return self.parse_departures(raw_departures)
 
-    def parse_trips(self, data, requested_time):
+    @staticmethod
+    def parse_trips(data, requested_time):
         """
         Parse the NS API xml result into Trip objects
         """
@@ -837,7 +844,7 @@ class NSAPI(object):
     def get_trips(self, timestamp, start, via, destination, departure=True, prev_advices=1, next_advices=1):
         """
         Fetch trip possibilities for these parameters
-        https://gateway.apiportal.ns.nl/public-reisinformatie/api/v3/trips<parameters>
+        https://gateway.apiportal.ns.nl/reisinformatie-api/api/v3/trips<parameters>
         @param timestamp:       departure time
         @param start:           from station
         @param via:             via station
@@ -913,11 +920,12 @@ class NSAPI(object):
             # 'minimalChangeTime': '{integer}',
         })
 
-        url = "/public-reisinformatie/api/v3/trips?%s" % params
+        url = "/reisinformatie-api/api/v3/trips?%s" % params
         raw_trips = self._request('GET', url)
         return self.parse_trips(raw_trips, requested_time)
 
-    def parse_stations(self, data):
+    @staticmethod
+    def parse_stations(data):
         obj = json.loads(data)
         stations = []
 
@@ -925,13 +933,12 @@ class NSAPI(object):
             newstat = Station(station)
             stations.append(newstat)
 
-        print((len(stations)))
         return stations
 
     def get_stations(self):
         """
         Fetch the list of stations
         """
-        url = "/public-reisinformatie/api/v2/stations?%s" % params
+        url = "/reisinformatie-api/api/v2/stations?%s" % params
         raw_stations = self._request('GET', url)
         return self.parse_stations(raw_stations)
