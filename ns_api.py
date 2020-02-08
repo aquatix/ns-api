@@ -315,10 +315,7 @@ class Departure(BaseObject):
 
         self.destination = departure_dict['direction']
 
-        try:
-            self.route_text = departure_dict['RouteTekst']
-        except KeyError:
-            self.route_text = None
+        self.route_text = departure_dict.get('RouteTekst', None)
 
         self.train_type = departure_dict['trainCategory']
         self.carrier = departure_dict['product']['operatorName']
@@ -442,12 +439,10 @@ class TripSubpart(BaseObject):
         # OVERSTAP-NIET-MOGELIJK, VERTRAAGD, NIEUW (=extra trein)
         self.going = True
         self.has_delay = False
+        self.punctuality = part_dict.get('punctionality', None)
         if part_dict['cancelled']:
-            self.going = False
-        try:
-            self.punctuality = part_dict['punctuality']
-        except KeyError:
-            self.punctuality = None
+            self.going = False       
+
 
         self.stops = []
         raw_stops = part_dict['stops']
@@ -598,10 +593,7 @@ class Trip(BaseObject):
         except KeyError:
             # Fall back to the planned platform
             self.arrival_platform_actual = self.arrival_platform_planned
-        try:
-            self.punctuality = trip_dict['punctuality']
-        except KeyError:
-            self.punctuality = None
+        self.punctuality = trip_dict.get('punctionality', None)
 
 
         self.trip_parts = []
@@ -687,7 +679,7 @@ class Trip(BaseObject):
         """
         If trip has delays, format a natural language summary
         """
-        #TODO: implement
+        # TODO: implement
         pass
 
     @classmethod
