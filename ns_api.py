@@ -171,6 +171,13 @@ def list_merge(list_a, list_b):
     return result
 
 
+# Exceptions
+
+class RequestParametersError(Exception):
+    """Exception raised when the request parameters were not accepted"""
+    pass
+
+
 # NS API objects
 class BaseObject:
     """
@@ -935,6 +942,9 @@ class NSAPI:
     def parse_stations(data):
         obj = json.loads(data)
         stations = []
+
+        if 'payload' not in obj:
+            raise RequestParametersError('The request could not be handled by the API')
 
         for station in obj['payload']:
             newstat = Station(station)
