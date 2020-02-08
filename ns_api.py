@@ -444,6 +444,10 @@ class TripSubpart(BaseObject):
         self.has_delay = False
         if part_dict['cancelled']:
             self.going = False
+        try:
+            self.punctuality = part_dict['punctuality']
+        except KeyError:
+            self.punctuality = None
 
         self.stops = []
         raw_stops = part_dict['stops']
@@ -567,7 +571,7 @@ class Trip(BaseObject):
             self.arrival_time_planned = None
 
         try:
-            self.arrival_time_actual = load_datetime(
+             self.arrival_time_actual = load_datetime(
                 trip_dict['legs'][-1]['destination']['actualDateTime'], dt_format)
         except:
             # Fall back to the planned time
@@ -594,6 +598,11 @@ class Trip(BaseObject):
         except:
             # Fall back to the planned platform
             self.arrival_platform_actual = self.arrival_platform_planned
+        try:
+            self.punctuality = trip_dict['punctuality']
+        except KeyError:
+           self.punctuality = None
+
 
         self.trip_parts = []
         raw_parts = trip_dict['legs']
