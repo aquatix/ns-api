@@ -441,8 +441,7 @@ class TripSubpart(BaseObject):
         self.has_delay = False
         self.punctuality = part_dict.get('punctionality', None)
         if part_dict['cancelled']:
-            self.going = False       
-
+            self.going = False
 
         self.stops = []
         raw_stops = part_dict['stops']
