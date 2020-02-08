@@ -554,54 +554,54 @@ class Trip(BaseObject):
         try:
             self.departure_time_planned = load_datetime(
                 trip_dict['legs'][0]['origin']['plannedDateTime'], dt_format)
-        except:
+        except KeyError:
             self.departure_time_planned = None
 
         try:
             self.departure_time_actual = load_datetime(
                 trip_dict['legs'][0]['origin']['actualDateTime'], dt_format)
-        except:
+        except KeyError:
             # Fall back to the planned time
             self.departure_time_actual = None
 
         try:
             self.arrival_time_planned = load_datetime(
                 trip_dict['legs'][-1]['destination']['plannedDateTime'], dt_format)
-        except:
+        except KeyError:
             self.arrival_time_planned = None
 
         try:
-             self.arrival_time_actual = load_datetime(
+            self.arrival_time_actual = load_datetime(
                 trip_dict['legs'][-1]['destination']['actualDateTime'], dt_format)
-        except:
+        except KeyError:
             # Fall back to the planned time
             self.arrival_time_actual = None
 
         try:
             self.departure_platform_planned = trip_dict['legs'][0]['origin']['plannedTrack']
-        except:
+        except KeyError:
             self.departure_platform_planned = None
 
         try:
             self.departure_platform_actual = trip_dict['legs'][0]['origin']['actualTrack']
-        except:
+        except KeyError:
             # Fall back to the planned platform
             self.departure_platform_actual = self.departure_platform_planned
 
         try:
             self.arrival_platform_planned = trip_dict['legs'][-1]['destination']['plannedTrack']
-        except:
+        except KeyError:
             self.arrival_platform_planned = None
 
         try:
             self.arrival_platform_actual = trip_dict['legs'][-1]['destination']['actualTrack']
-        except:
+        except KeyError:
             # Fall back to the planned platform
             self.arrival_platform_actual = self.arrival_platform_planned
         try:
             self.punctuality = trip_dict['punctuality']
         except KeyError:
-           self.punctuality = None
+            self.punctuality = None
 
 
         self.trip_parts = []
@@ -687,7 +687,7 @@ class Trip(BaseObject):
         """
         If trip has delays, format a natural language summary
         """
-        # TODO implement
+        #TODO: implement
         pass
 
     @classmethod
