@@ -32,6 +32,12 @@ necessary packages:
     mkvirtualenv ns-api
     pip install -r requirements.txt
 
+Development in Docker
+~~~~~~~~~~~~~~~~~~~~~
+
+Git clone this repository, use vscode & docker to remote open in a dev container
+`as explained in this howto <https://code.visualstudio.com/docs/remote/containers>`_.
+
 As part of ns-notifications
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -67,6 +73,7 @@ API <https://apiportal.ns.nl/>`_, you `need to subscribe
 <https://apiportal.ns.nl/products/NsApp>`_. This immediately
 gives you a primary and secundary key you need for access.
 
+
 .. |PyPI version| image:: https://img.shields.io/pypi/v/nsapi.svg
    :target: https://pypi.python.org/pypi/nsapi/
 .. |PyPI downloads| image:: https://img.shields.io/pypi/dm/nsapi.svg
@@ -80,11 +87,3 @@ gives you a primary and secundary key you need for access.
    :target: https://github.com/aquatix/ns-api
    :alt: GitHub commits since latest release
 .. _ns-notifications: https://github.com/aquatix/ns-notifications
-
-
-Development
-~~~~~~~~~~
-
-Git clone this repository, use vscode & docker to remote open in a dev container as explained here:
-https://code.visualstudio.com/docs/remote/containers
-
