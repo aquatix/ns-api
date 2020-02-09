@@ -80,3 +80,11 @@ gives you a primary and secundary key you need for access.
    :target: https://github.com/aquatix/ns-api
    :alt: GitHub commits since latest release
 .. _ns-notifications: https://github.com/aquatix/ns-notifications
+
+
+Development
+~~~~~~~~~~
+
+Git clone this repository, use vscode & docker to remote open in a dev container as explained here:
+https://code.visualstudio.com/docs/remote/containers
+
