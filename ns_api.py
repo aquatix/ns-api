@@ -601,7 +601,6 @@ class Trip(BaseObject):
             self.arrival_platform_actual = self.arrival_platform_planned
         self.punctuality = trip_dict.get('punctionality', None)
 
-
         self.trip_parts = []
         raw_parts = trip_dict['legs']
         if isinstance(trip_dict['legs'], collections.OrderedDict):
@@ -950,4 +949,3 @@ class NSAPI:
         url = "/reisinformatie-api/api/v2/stations?%s" % params
         raw_stations = self._request('GET', url)
         return self.parse_stations(raw_stations)
-        
