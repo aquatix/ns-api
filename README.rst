@@ -73,6 +73,10 @@ API <https://apiportal.ns.nl/>`_, you `need to subscribe
 <https://apiportal.ns.nl/products/NsApp>`_. This immediately
 gives you a primary and secundary key you need for access.
 
+The library uses the `reisinformatie API <https://apiportal.ns.nl/docs/services/reisinformatie-api/>`_. Here you can try the API for yourself (and look up station names, but the library has the get_stations() function for this too).
+
+The API portal also `provides statistics on usage and errors <https://apiportal.ns.nl/Developer/Analytics>`_.
+
 
 .. |PyPI version| image:: https://img.shields.io/pypi/v/nsapi.svg
    :target: https://pypi.python.org/pypi/nsapi/
