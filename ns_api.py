@@ -446,7 +446,6 @@ class TripSubpart(BaseObject):
         # OVERSTAP-NIET-MOGELIJK, VERTRAAGD, NIEUW (=extra trein)
         self.going = True
         self.has_delay = False
-        self.punctuality = part_dict.get('punctionality', None)
         if part_dict['cancelled']:
             self.going = False
 
@@ -599,7 +598,6 @@ class Trip(BaseObject):
         except KeyError:
             # Fall back to the planned platform
             self.arrival_platform_actual = self.arrival_platform_planned
-        self.punctuality = trip_dict.get('punctionality', None)
 
         self.trip_parts = []
         raw_parts = trip_dict['legs']
