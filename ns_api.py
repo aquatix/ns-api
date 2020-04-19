@@ -15,7 +15,7 @@ import pytz
 from pytz.tzinfo import StaticTzInfo
 
 # ns-api library version
-__version__ = '3.0.3'
+__version__ = '3.0.4'
 
 
 # set placeholder url params
