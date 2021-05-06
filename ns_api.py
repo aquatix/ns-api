@@ -404,6 +404,7 @@ class TripStop(BaseObject):
             self.planned_key = None
 
         self.platform_changed = False
+        self.planned_platform = None
         if 'plannedDepartureTrack' in part_dict:
             self.planned_platform = part_dict['plannedDepartureTrack']
 
