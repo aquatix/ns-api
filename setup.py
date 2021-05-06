@@ -27,7 +27,7 @@ setup(
     # third part for minor release
     # second when api changes
     # first when it becomes stable someday
-    version='3.0.4',
+    version='3.0.5',
     author='Michiel Scholten',
     author_email='michiel@diginaut.net',
 
@@ -59,6 +59,7 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     zip_safe=True,
 )
