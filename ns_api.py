@@ -439,9 +439,14 @@ class TripSubpart(BaseObject):
         if part_dict is None:
             return
         self.trip_type = part_dict['travelType']
-        self.transporter = part_dict['product']['operatorName']
-        self.transport_type = part_dict['product']['categoryCode']
-        self.journey_id = part_dict['product']['number']
+        if 'product' in part_dict:
+            self.transporter = part_dict['product'].get('operatorName', '-')
+            self.transport_type = part_dict['product'].get('categoryCode', '-')
+            self.journey_id = part_dict['product'].get('number')
+        else:
+            self.transporter = '-'
+            self.transport_type = '-'
+            self.journey_id = 0
 
         # VOLGENS-PLAN, GEANNULEERD (=vervallen trein), GEWIJZIGD (=planaanpassing in de bijsturing op de dag zelf),
         # OVERSTAP-NIET-MOGELIJK, VERTRAAGD, NIEUW (=extra trein)
