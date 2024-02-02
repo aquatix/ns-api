@@ -36,7 +36,7 @@ setup(
 
     # as a practice no need to hard code version unless you know program won't
     # work unless the specific versions are used
-    install_requires=['pytz>=2018.5', 'future'],
+    install_requires=['pytz>=2018.5'],
 
     # package_dir={'ns_api': ''},
     py_modules=['ns_api'],
@@ -61,6 +61,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ],
     zip_safe=True,
 )

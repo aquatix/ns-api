@@ -3,9 +3,5 @@
 # Handy Python shell
 bpython
 
-# Linting
-flake8-html
-pylint
-
-# Auto-fix code style issues
-autopep8
+# Linting and auto-fix code style issues
+ruff
