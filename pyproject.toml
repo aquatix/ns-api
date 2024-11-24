@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nsapi"
+version = "3.1.1"
+authors = [
+    {name = "Michiel Scholten", email = "michiel@diginaut.net"},
+]
+description="api wrapper for Dutch Railways (NS)"
+readme = "README.rst"
+requires-python = ">=3.8"
+keywords = ["api", "automation", "public transport"]
+license = {text = "MIT"}
+classifiers = [
+    "Topic :: Software Development :: Libraries",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "pytz>2018.5",
+    "future",
+]
+# dynamic = ["version"]
+
+[project.urls]
+"Homepage" = "https://github.com/aquatix/ns-api/"
+"Bug Tracker" = "https://github.com/aquatix/ns-api/issues"
+
+[tool.ruff]
+exclude = [
+    ".git",
+    "__pycache__",
+    "docs/source/conf.py",
+    "build",
+    "dist",
+]
+line-length = 120
+
+[tool.ruff.format]
+# Use single quotes for non-triple-quoted strings.
+quote-style = "single"
+
+[tool.ruff.lint]
+ignore = ["D203", "D213"]
+select = [
+    "C9",
+    "D",
+    "E",
+    "F",
+    "I",
+    "W",
+]
+
+[tool.ruff.lint.isort]
+section-order = ["future", "standard-library","third-party", "first-party", "testing", "local-folder"]
+
+[tool.ruff.lint.isort.sections]
+testing = ["tests"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
