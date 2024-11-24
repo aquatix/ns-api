@@ -22,7 +22,6 @@ classifiers = [
 ]
 dependencies = [
     "pytz>2018.5",
-    "future",
 ]
 # dynamic = ["version"]
 
