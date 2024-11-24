@@ -1,6 +1,4 @@
-"""
-Library to query the official Dutch railways API
-"""
+"""Library to query the official Dutch railways API."""
 
 import collections
 import http.client
@@ -15,7 +13,7 @@ import pytz
 from pytz.tzinfo import StaticTzInfo
 
 # ns-api library version
-__version__ = '3.0.4'
+__version__ = '3.1.1'
 
 
 # set placeholder url params
@@ -23,12 +21,16 @@ params = urllib.parse.urlencode({})
 
 
 # Date/time helpers
-NS_DATETIME = "%Y-%m-%dT%H:%M:%S%z"
+NS_DATETIME = '%Y-%m-%dT%H:%M:%S%z'
 
 
 def datetime_to_string(timestamp, dt_format='%Y-%m-%d %H:%M:%S'):
-    """
-    Format datetime object to string
+    """Format datetime object to string.
+
+    :param datetime timestamp: Datetime to apply formatting on
+    :param str dt_format: The formatting to use on the timestamp
+    :return: Formatted timestamp
+    :rtype: str
     """
     return timestamp.strftime(dt_format)
 
@@ -43,6 +45,7 @@ def simple_time(value):
 
 
 # Timezone helpers
+
 
 def is_dst(zonename):
     """
@@ -82,6 +85,7 @@ def load_datetime(value, dt_format):
 
 
 # List helpers
+
 
 def list_to_json(source_list):
     """
@@ -173,8 +177,10 @@ def list_merge(list_a, list_b):
 
 # Exceptions
 
+
 class RequestParametersError(Exception):
     """Exception raised when the request parameters were not accepted"""
+
     pass
 
 
@@ -235,7 +241,7 @@ class Station(BaseObject):
         self.names = {
             'short': stat_dict['namen']['kort'],
             'middle': stat_dict['namen']['middel'],
-            'long': stat_dict['namen']['lang']
+            'long': stat_dict['namen']['lang'],
         }
         self.country = stat_dict['land']
         self.lat = stat_dict['lat']
@@ -291,22 +297,18 @@ class Departure(BaseObject):
     def __init__(self, departure_dict=None):
         if departure_dict is None:
             return
-        self.key = departure_dict['product']['number'] + \
-            '_' + departure_dict['plannedDateTime']
+        self.key = departure_dict['product']['number'] + '_' + departure_dict['plannedDateTime']
         self.trip_number = departure_dict['product']['number']
-        self.departure_time_planned = load_datetime(
-            departure_dict['plannedDateTime'], NS_DATETIME)
+        self.departure_time_planned = load_datetime(departure_dict['plannedDateTime'], NS_DATETIME)
         self.departure_time = self.departure_time_planned  # Default to the planned time
         self.departure_status = departure_dict['departureStatus']
         self.cancelled = departure_dict['cancelled']
         self.delay = 0
         try:
-            self.departure_time_actual = load_datetime(
-                departure_dict['actualDateTime'], NS_DATETIME)
+            self.departure_time_actual = load_datetime(departure_dict['actualDateTime'], NS_DATETIME)
             if self.departure_time_actual is not None and self.departure_time_actual != self.departure_time_planned:
                 self.has_delay = True
-                delay = (self.departure_time_actual
-                         - self.departure_time_planned)
+                delay = self.departure_time_actual - self.departure_time_planned
                 self.delay = delay.seconds // 60 % 60
         except KeyError:
             self.has_delay = False
@@ -334,14 +336,11 @@ class Departure(BaseObject):
 
     def __setstate__(self, source_dict):
         super(Departure, self).__setstate__(source_dict)
-        self.departure_time = load_datetime(
-            source_dict['plannedDateTime'], NS_DATETIME)
+        self.departure_time = load_datetime(source_dict['plannedDateTime'], NS_DATETIME)
 
     def __str__(self):
         return '<Departure> trip_number: {0} {1} {2}'.format(
-            self.trip_number,
-            self.destination,
-            self.departure_time_planned
+            self.trip_number, self.destination, self.departure_time_planned
         )
 
 
@@ -379,8 +378,7 @@ class TripStop(BaseObject):
 
         if 'plannedDepartureDateTime' in part_dict:
             try:
-                self.planned_time = load_datetime(
-                    part_dict['plannedDepartureDateTime'], NS_DATETIME)
+                self.planned_time = load_datetime(part_dict['plannedDepartureDateTime'], NS_DATETIME)
                 self.key = simple_time(self.planned_time) + '_' + self.name
             except TypeError:
                 self.planned_time = None
@@ -392,10 +390,8 @@ class TripStop(BaseObject):
 
         if 'actualDepartureDateTime' in part_dict:
             try:
-                self.actual_time = load_datetime(
-                    part_dict['actualDepartureDateTime'], NS_DATETIME)
-                self.actual_key = simple_time(
-                    self.actual_time) + '_' + self.name
+                self.actual_time = load_datetime(part_dict['actualDepartureDateTime'], NS_DATETIME)
+                self.actual_key = simple_time(self.actual_time) + '_' + self.name
             except TypeError:
                 self.actual_time = None
                 self.planned_key = None
@@ -517,10 +513,7 @@ class TripSubpart(BaseObject):
 
     def __str__(self):
         return '<TripSubpart> [{0}] {1} {2} {3}'.format(
-            self.going,
-            self.journey_id,
-            self.trip_type,
-            self.transport_type
+            self.going, self.journey_id, self.trip_type, self.transport_type
         )
 
 
@@ -553,32 +546,30 @@ class Trip(BaseObject):
             self.going = False
         self.travel_time_actual = trip_dict['actualDurationInMinutes']
 
-        dt_format = "%Y-%m-%dT%H:%M:%S%z"
+        dt_format = '%Y-%m-%dT%H:%M:%S%z'
 
         self.requested_time = trip_datetime
 
         try:
-            self.departure_time_planned = load_datetime(
-                trip_dict['legs'][0]['origin']['plannedDateTime'], dt_format)
+            self.departure_time_planned = load_datetime(trip_dict['legs'][0]['origin']['plannedDateTime'], dt_format)
         except KeyError:
             self.departure_time_planned = None
 
         try:
-            self.departure_time_actual = load_datetime(
-                trip_dict['legs'][0]['origin']['actualDateTime'], dt_format)
+            self.departure_time_actual = load_datetime(trip_dict['legs'][0]['origin']['actualDateTime'], dt_format)
         except KeyError:
             # Fall back to the planned time
             self.departure_time_actual = None
 
         try:
             self.arrival_time_planned = load_datetime(
-                trip_dict['legs'][-1]['destination']['plannedDateTime'], dt_format)
+                trip_dict['legs'][-1]['destination']['plannedDateTime'], dt_format
+            )
         except KeyError:
             self.arrival_time_planned = None
 
         try:
-            self.arrival_time_actual = load_datetime(
-                trip_dict['legs'][-1]['destination']['actualDateTime'], dt_format)
+            self.arrival_time_actual = load_datetime(trip_dict['legs'][-1]['destination']['actualDateTime'], dt_format)
         except KeyError:
             # Fall back to the planned time
             self.arrival_time_actual = None
@@ -626,8 +617,12 @@ class Trip(BaseObject):
         """
         Return the delay of the train for this instance
         """
-        delay = {'departure_time': None, 'departure_delay': None, 'requested_differs': None,
-                 'parts': []}
+        delay = {
+            'departure_time': None,
+            'departure_delay': None,
+            'requested_differs': None,
+            'parts': [],
+        }
         if self.departure_time_actual and self.departure_time_actual > self.departure_time_planned:
             delay['departure_delay'] = self.departure_time_actual - self.departure_time_planned
             delay['departure_time'] = self.departure_time_actual
@@ -674,14 +669,10 @@ class Trip(BaseObject):
             trip_parts.append(subpart)
         self.trip_parts = trip_parts
         # Datetime stamps
-        self.departure_time_planned = load_datetime(
-            self.departure_time_planned, NS_DATETIME)
-        self.departure_time_actual = load_datetime(
-            self.departure_time_actual, NS_DATETIME)
-        self.arrival_time_planned = load_datetime(
-            self.arrival_time_planned, NS_DATETIME)
-        self.arrival_time_actual = load_datetime(
-            self.arrival_time_actual, NS_DATETIME)
+        self.departure_time_planned = load_datetime(self.departure_time_planned, NS_DATETIME)
+        self.departure_time_actual = load_datetime(self.departure_time_actual, NS_DATETIME)
+        self.arrival_time_planned = load_datetime(self.arrival_time_planned, NS_DATETIME)
+        self.arrival_time_actual = load_datetime(self.arrival_time_actual, NS_DATETIME)
         self.requested_time = load_datetime(self.requested_time, NS_DATETIME)
 
     def delay_text(self):
@@ -716,7 +707,7 @@ class Trip(BaseObject):
             self.has_delay,
             self.departure_time_planned,
             self.departure_time_actual,
-            self.nr_transfers
+            self.nr_transfers,
         )
 
 
@@ -736,13 +727,13 @@ class NSAPI:
         }
         try:
             conn = http.client.HTTPSConnection('gateway.apiportal.ns.nl')
-            conn.request(method, url, "{body}", headers)
+            conn.request(method, url, '{body}', headers)
             response = conn.getresponse()
             data = response.read().decode('UTF-8')
             conn.close()
             return data
         except Exception as e:
-            print("Error during connection: {0}".format(e))
+            print('Error during connection: {0}'.format(e))
 
     @staticmethod
     def parse_disruptions(data):
@@ -776,15 +767,19 @@ class NSAPI:
         """
 
         if station is None:
-            params = urllib.parse.urlencode({
-                # Request parameters
-                'actual': actual,
-                'lang': 'nl',
-            })
-            url = ("/reisinformatie-api/api/v2/disruptions?%s" % params)
+            params = urllib.parse.urlencode(
+                {
+                    # Request parameters
+                    'actual': actual,
+                    'lang': 'nl',
+                }
+            )
+            url = '/reisinformatie-api/api/v2/disruptions?%s' % params
         else:
-            url = ("/reisinformatie-api/api/v2/disruptions/station/%s?%s" %
-                   (station, params))
+            url = '/reisinformatie-api/api/v2/disruptions/station/%s?%s' % (
+                station,
+                params,
+            )
         raw_disruptions = self._request('GET', url)
         return self.parse_disruptions(raw_disruptions)
 
@@ -804,7 +799,14 @@ class NSAPI:
 
         return departures
 
-    def get_departures(self, station=None, for_datetime=None, max_journeys='25', uic_code=None, source=None):
+    def get_departures(
+        self,
+        station=None,
+        for_datetime=None,
+        max_journeys='25',
+        uic_code=None,
+        source=None,
+    ):
         """
         Fetch the current departure times from this station
         @param station: station to lookup
@@ -813,16 +815,18 @@ class NSAPI:
         @param uicCode: specify a station by UIC code (84xxxxx)
         @param source: forces to use a certain source
         """
-        params = urllib.parse.urlencode({
-            # Request parameters
-            'dateTime': for_datetime,
-            'maxJourneys': max_journeys,
-            'lang': 'nl',
-            'station': station,
-            'uicCode': uic_code,
-            'source': source,
-        })
-        url = "/reisinformatie-api/api/v2/departures?%s" % params
+        params = urllib.parse.urlencode(
+            {
+                # Request parameters
+                'dateTime': for_datetime,
+                'maxJourneys': max_journeys,
+                'lang': 'nl',
+                'station': station,
+                'uicCode': uic_code,
+                'source': source,
+            }
+        )
+        url = '/reisinformatie-api/api/v2/departures?%s' % params
 
         raw_departures = self._request('GET', url)
         return self.parse_departures(raw_departures)
@@ -849,9 +853,18 @@ class NSAPI:
 
         return trips
 
-    def get_trips(self, timestamp, start, via, destination, departure=True, prev_advices=1, next_advices=1):
-        """
-        Fetch trip possibilities for these parameters
+    def get_trips(
+        self,
+        timestamp,
+        start,
+        via,
+        destination,
+        departure=True,
+        prev_advices=1,
+        next_advices=1,
+    ):
+        """Fetch trip possibilities for these parameters.
+
         https://gateway.apiportal.ns.nl/reisinformatie-api/api/v3/trips<parameters>
         @param timestamp:       departure time
         @param start:           from station
@@ -867,68 +880,67 @@ class NSAPI:
 
         if len(timestamp) == 5:
             # Format of HH:MM - api needs yyyy-mm-ddThh:mm
-            timestamp = time.strftime("%Y-%m-%d") + 'T' + timestamp
-            #requested_time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M")
+            timestamp = time.strftime('%Y-%m-%d') + 'T' + timestamp
+            # requested_time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M")
             # TODO: DST/normal time
-            requested_time = load_datetime(
-                timestamp + timezonestring, "%Y-%m-%dT%H:%M%z")
+            requested_time = load_datetime(timestamp + timezonestring, '%Y-%m-%dT%H:%M%z')
         else:
-            #requested_time = datetime.strptime(timestamp, "%d-%m-%Y %H:%M")
-            requested_time = load_datetime(
-                timestamp + timezonestring, "%d-%m-%Y %H:%M%z")
-            timestamp = datetime.strptime(
-                timestamp, "%d-%m-%Y %H:%M").strftime("%Y-%m-%dT%H:%M")
+            # requested_time = datetime.strptime(timestamp, "%d-%m-%Y %H:%M")
+            requested_time = load_datetime(timestamp + timezonestring, '%d-%m-%Y %H:%M%z')
+            timestamp = datetime.strptime(timestamp, '%d-%m-%Y %H:%M').strftime('%Y-%m-%dT%H:%M')
 
-        params = urllib.parse.urlencode({
-            # all possible Request parameters
-            # 'originLat': '{string}',
-            # 'originLng': '{string}',
-            # 'destinationLat': '{string}',
-            # 'destinationLng': '{string}',
-            # 'viaLat': '{string}',
-            # 'viaLng': '{string}',
-            # 'viaWaitTime': '{integer}',
-            'dateTime': timestamp,
-            'searchForArrival': not departure,
-            'previousAdvices': prev_advices,
-            'nextAdvices': next_advices,
-            # 'context': '{string}',
-            # 'addChangeTime': '{integer}',
-            # 'lang': '{string}',
-            # 'originTransit': 'False',
-            # 'originWalk': 'False',
-            # 'originBike': 'False',
-            # 'originCar': 'False',
-            # 'originName': '{string}',
-            # 'travelAssistanceTransferTime': '0',
-            # 'searchForAccessibleTrip': 'False',
-            # 'destinationTransit': 'False',
-            # 'destinationWalk': 'False',
-            # 'destinationBike': 'False',
-            # 'destinationCar': 'False',
-            # 'destinationName': '{string}',
-            # 'accessibilityEquipment1': '{string}',
-            # 'accessibilityEquipment2': '{string}',
-            # 'excludeHighSpeedTrains': 'False',
-            # 'excludeReservationRequired': 'False',
-            'passing': 'False',
-            # 'travelRequestType': '{string}',
-            # 'originEVACode': '{string}',
-            # 'destinationEVACode': '{string}',
-            # 'viaEVACode': '{string}',
-            # 'shorterChange': '{boolean}',
-            'fromStation': start,
-            'toStation': destination,
-            # 'originUicCode': '{string}',
-            # 'destinationUicCode': '{string}',
-            # 'viaUicCode': '{string}',
-            # 'bikeCarriageRequired': '{boolean}',
-            'viaStation': via,
-            'departure': departure,
-            # 'minimalChangeTime': '{integer}',
-        })
+        params = urllib.parse.urlencode(
+            {
+                # all possible Request parameters
+                # 'originLat': '{string}',
+                # 'originLng': '{string}',
+                # 'destinationLat': '{string}',
+                # 'destinationLng': '{string}',
+                # 'viaLat': '{string}',
+                # 'viaLng': '{string}',
+                # 'viaWaitTime': '{integer}',
+                'dateTime': timestamp,
+                'searchForArrival': not departure,
+                'previousAdvices': prev_advices,
+                'nextAdvices': next_advices,
+                # 'context': '{string}',
+                # 'addChangeTime': '{integer}',
+                # 'lang': '{string}',
+                # 'originTransit': 'False',
+                # 'originWalk': 'False',
+                # 'originBike': 'False',
+                # 'originCar': 'False',
+                # 'originName': '{string}',
+                # 'travelAssistanceTransferTime': '0',
+                # 'searchForAccessibleTrip': 'False',
+                # 'destinationTransit': 'False',
+                # 'destinationWalk': 'False',
+                # 'destinationBike': 'False',
+                # 'destinationCar': 'False',
+                # 'destinationName': '{string}',
+                # 'accessibilityEquipment1': '{string}',
+                # 'accessibilityEquipment2': '{string}',
+                # 'excludeHighSpeedTrains': 'False',
+                # 'excludeReservationRequired': 'False',
+                'passing': 'False',
+                # 'travelRequestType': '{string}',
+                # 'originEVACode': '{string}',
+                # 'destinationEVACode': '{string}',
+                # 'viaEVACode': '{string}',
+                # 'shorterChange': '{boolean}',
+                'fromStation': start,
+                'toStation': destination,
+                # 'originUicCode': '{string}',
+                # 'destinationUicCode': '{string}',
+                # 'viaUicCode': '{string}',
+                # 'bikeCarriageRequired': '{boolean}',
+                'viaStation': via,
+                'departure': departure,
+                # 'minimalChangeTime': '{integer}',
+            }
+        )
 
-        url = "/reisinformatie-api/api/v3/trips?%s" % params
+        url = '/reisinformatie-api/api/v3/trips?%s' % params
         raw_trips = self._request('GET', url)
         return self.parse_trips(raw_trips, requested_time)
 
@@ -950,6 +962,6 @@ class NSAPI:
         """
         Fetch the list of stations
         """
-        url = "/reisinformatie-api/api/v2/stations?%s" % params
+        url = '/reisinformatie-api/api/v2/stations?%s' % params
         raw_stations = self._request('GET', url)
         return self.parse_stations(raw_stations)
