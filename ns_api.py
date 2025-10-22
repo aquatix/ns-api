@@ -394,10 +394,10 @@ class TripStop(BaseObject):
                 self.actual_key = simple_time(self.actual_time) + '_' + self.name
             except TypeError:
                 self.actual_time = None
-                self.planned_key = None
+                self.actual_key = None
         else:
             self.actual_time = None
-            self.planned_key = None
+            self.actual_key = None
 
         self.platform_changed = False
         self.planned_platform = None
