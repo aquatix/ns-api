@@ -407,13 +407,12 @@ class TripStop(BaseObject):
         if 'actualDepartureTrack' in part_dict:
             self.actual_platform = part_dict['actualDepartureTrack']
             self.platform_changed = bool(self.actual_platform != self.planned_platform)
-        try:
-            if self.actual_time is not None and self.planned_time is not None:
-                self.delay = self.actual_time - self.planned_time
-            else:
-                self.delay = None
-        except KeyError:
+
+        if self.actual_time is not None and self.planned_time is not None:
+            self.delay = self.actual_time - self.planned_time
+        else:
             self.delay = None
+
 
     def __getstate__(self):
         result = super(TripStop, self).__getstate__()
