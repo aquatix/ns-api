@@ -409,7 +409,10 @@ class TripStop(BaseObject):
             self.platform_changed = bool(self.actual_platform != self.planned_platform)
         if self.actual_time is not None:
             try:
-                self.delay = self.actual_time - self.planned_time
+                if self.actual_time is not None and self.planned_time is not None:
+                    self.delay = self.actual_time - self.planned_time
+                else:
+                    self.delay = None
             except KeyError:
                 self.delay = None
 
