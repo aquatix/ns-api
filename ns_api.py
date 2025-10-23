@@ -36,9 +36,7 @@ def datetime_to_string(timestamp, dt_format='%Y-%m-%d %H:%M:%S'):
 
 
 def simple_time(value):
-    """
-    Format a datetime or timedelta object to a string of format HH:MM
-    """
+    """Format a datetime or timedelta object to a string of format HH:MM."""
     if isinstance(value, timedelta):
         return ':'.join(str(value).split(':')[:2])
     return datetime_to_string(value, '%H:%M')
@@ -48,18 +46,14 @@ def simple_time(value):
 
 
 def is_dst(zonename):
-    """
-    Find out whether it's Daylight Saving Time in this timezone
-    """
+    """Find out whether it's Daylight Saving Time in this timezone."""
     tz = pytz.timezone(zonename)
     now = pytz.utc.localize(datetime.utcnow())
     return now.astimezone(tz).dst() != timedelta(0)
 
 
 class OffsetTime(StaticTzInfo):
-    """
-    A dumb timezone based on offset such as +0530, -0600, etc.
-    """
+    """A dumb timezone based on offset such as +0530, -0600, etc."""
 
     def __init__(self, offset):
         hours = int(offset[:3])
@@ -68,9 +62,7 @@ class OffsetTime(StaticTzInfo):
 
 
 def load_datetime(value, dt_format):
-    """
-    Create timezone-aware datetime object
-    """
+    """Create timezone-aware datetime object."""
     if dt_format.endswith('%z'):
         dt_format = dt_format[:-2]
         offset = value[-5:]
@@ -88,9 +80,7 @@ def load_datetime(value, dt_format):
 
 
 def list_to_json(source_list):
-    """
-    Serialise all the items in source_list to json
-    """
+    """Serialise all the items in source_list to json."""
     result = []
     for item in source_list:
         result.append(item.to_json())
@@ -98,9 +88,7 @@ def list_to_json(source_list):
 
 
 def list_from_json(source_list_json):
-    """
-    Deserialise all the items in source_list from json
-    """
+    """Deserialise all the items in source_list from json."""
     result = []
     if source_list_json == [] or source_list_json is None:
         return result
@@ -133,9 +121,7 @@ def list_from_json(source_list_json):
 
 
 def list_diff(list_a, list_b):
-    """
-    Return the items from list_b that differ from list_a
-    """
+    """Return the items from list_b that differ from list_a."""
     result = []
     for item in list_b:
         if item not in list_a:
@@ -144,9 +130,7 @@ def list_diff(list_a, list_b):
 
 
 def list_same(list_a, list_b):
-    """
-    Return the items from list_b that are also on list_a
-    """
+    """Return the items from list_b that are also on list_a."""
     result = []
     for item in list_b:
         if item in list_a:
@@ -155,14 +139,14 @@ def list_same(list_a, list_b):
 
 
 def list_merge(list_a, list_b):
-    """
-    Merge two lists without duplicating items
+    """Merge two lists without duplicating items.
 
     Args:
       list_a: list
       list_b: list
     Returns:
       New list with deduplicated items from list_a and list_b
+
     """
     # return list(collections.OrderedDict.fromkeys(list_a + list_b))
     result = []
@@ -179,16 +163,14 @@ def list_merge(list_a, list_b):
 
 
 class RequestParametersError(Exception):
-    """Exception raised when the request parameters were not accepted"""
+    """Exception raised when the request parameters were not accepted."""
 
     pass
 
 
 # NS API objects
 class BaseObject:
-    """
-    Base object with useful functions
-    """
+    """Base object with useful functions."""
 
     def __getstate__(self):
         result = self.__dict__.copy()
@@ -196,9 +178,7 @@ class BaseObject:
         return result
 
     def to_json(self):
-        """
-        Create a JSON representation of this model
-        """
+        """Create a JSON representation of this model."""
         # return json.dumps(self.__getstate__())
         return json.dumps(self.__getstate__(), ensure_ascii=False)
 
@@ -210,9 +190,7 @@ class BaseObject:
         self.__dict__ = source_dict
 
     def from_json(self, source_json):
-        """
-        Parse a JSON representation of this model back to, well, the model
-        """
+        """Parse a JSON representation of this model back to, well, the model."""
         source_dict = json.JSONDecoder().decode(source_json)
         self.__setstate__(source_dict)
 
@@ -227,9 +205,7 @@ class BaseObject:
 
 
 class Station(BaseObject):
-    """
-    Information on a railway station
-    """
+    """Information on a railway station."""
 
     def __init__(self, stat_dict=None):
         if stat_dict is None:
@@ -264,9 +240,7 @@ class Station(BaseObject):
 
 
 class Disruption(BaseObject):
-    """
-    Planned and unplanned disruptions of the railroad traffic
-    """
+    """Planned and unplanned disruptions of the railroad traffic."""
 
     def __init__(self, part_dict=None):
         if part_dict is None:
@@ -290,9 +264,7 @@ class Disruption(BaseObject):
 
 
 class Departure(BaseObject):
-    """
-    Information on a departing train on a certain station
-    """
+    """Information on a departing train on a certain station."""
 
     def __init__(self, departure_dict=None):
         if departure_dict is None:
@@ -345,9 +317,7 @@ class Departure(BaseObject):
 
 
 class TripRemark(BaseObject):
-    """
-    Notes on this route, generally about disruptions
-    """
+    """Notes on this route, generally about disruptions."""
 
     def __init__(self, part_dict=None):
         if part_dict is None:
@@ -364,9 +334,7 @@ class TripRemark(BaseObject):
 
 
 class TripStop(BaseObject):
-    """
-    Information on a stop on a route (station, time, platform)
-    """
+    """Information on a stop on a route (station, time, platform)."""
 
     def __init__(self, part_dict=None):
         if part_dict is None:
@@ -428,9 +396,7 @@ class TripStop(BaseObject):
 
 
 class TripSubpart(BaseObject):
-    """
-    Sub route; each part means a transfer
-    """
+    """Sub route; each part means a transfer."""
 
     def __init__(self, part_dict=None):
         if part_dict is None:
@@ -519,9 +485,7 @@ class TripSubpart(BaseObject):
 
 
 class Trip(BaseObject):
-    """
-    Suggested route for the provided departure/destination combination
-    """
+    """Suggested route for the provided departure/destination combination."""
 
     def __init__(self, trip_dict=None, trip_datetime=None):
         if trip_dict is None:
@@ -615,9 +579,7 @@ class Trip(BaseObject):
 
     @property
     def delay(self):
-        """
-        Return the delay of the train for this instance
-        """
+        """Return the delay of the train for this instance."""
         delay = {
             'departure_time': None,
             'departure_delay': None,
@@ -677,17 +639,13 @@ class Trip(BaseObject):
         self.requested_time = load_datetime(self.requested_time, NS_DATETIME)
 
     def delay_text(self):
-        """
-        If trip has delays, format a natural language summary
-        """
+        """If trip has delays, format a natural language summary."""
         # TODO: implement
         pass
 
     @classmethod
     def get_actual(cls, trip_list, trip_time):
-        """
-        Look for the train actually leaving at time
-        """
+        """Look for the train actually leaving at time."""
         for trip in trip_list:
             if simple_time(trip.departure_time_planned) == trip_time:
                 return trip
@@ -695,9 +653,7 @@ class Trip(BaseObject):
 
     @classmethod
     def get_optimal(cls, trip_list):
-        """
-        Look for the optimal trip in the list
-        """
+        """Look for the optimal trip in the list."""
         for trip in trip_list:
             if trip.is_optimal:
                 return trip
@@ -713,9 +669,9 @@ class Trip(BaseObject):
 
 
 class NSAPI:
-    """
-    NS API object
-    Library to query the official Dutch railways API
+    """NS API object.
+
+    Library to query the official Dutch railways API.
     """
 
     def __init__(self, subscription_key):
@@ -738,8 +694,8 @@ class NSAPI:
 
     @staticmethod
     def parse_disruptions(data):
-        """
-        Parse the NS API json result into Disruption objects
+        """Parse the NS API json result into Disruption objects.
+
         @param data: raw json result from the NS API
         """
         obj = json.loads(data)
@@ -760,13 +716,12 @@ class NSAPI:
         return disruptions
 
     def get_disruptions(self, station=None, actual=True, unplanned=True):
-        """
-        Fetch the current disruptions, or even the planned ones
+        """Fetch the current disruptions, or even the planned ones.
+
         @param station: station to lookup
         @param actual: only actual disruption
         @param unplanned: only unplanned disruption
         """
-
         if station is None:
             params = urllib.parse.urlencode(
                 {
@@ -786,8 +741,8 @@ class NSAPI:
 
     @staticmethod
     def parse_departures(data):
-        """
-        Parse the NS API json result into Departure objects
+        """Parse the NS API json result into Departure objects.
+
         @param data: raw json result from the NS API
         """
         obj = json.loads(data)
@@ -808,8 +763,8 @@ class NSAPI:
         uic_code=None,
         source=None,
     ):
-        """
-        Fetch the current departure times from this station
+        """Fetch the current departure times from this station.
+
         @param station: station to lookup
         @param dateTime: Format - date-time (as date-time in RFC3339)
         @param maxJourneys: int32. number of departures or arrivals to return
@@ -834,9 +789,7 @@ class NSAPI:
 
     @staticmethod
     def parse_trips(data, requested_time):
-        """
-        Parse the NS API xml result into Trip objects
-        """
+        """Parse the NS API xml result into Trip objects."""
         obj = json.loads(data)
         trips = []
 
@@ -867,6 +820,7 @@ class NSAPI:
         """Fetch trip possibilities for these parameters.
 
         https://gateway.apiportal.ns.nl/reisinformatie-api/api/v3/trips<parameters>
+
         @param timestamp:       departure time
         @param start:           from station
         @param via:             via station
@@ -947,6 +901,12 @@ class NSAPI:
 
     @staticmethod
     def parse_stations(data):
+        """Parse the JSON data with the station list.
+
+        :param str data: 'raw' response from API
+        :return: list of the stations
+        :rtype: list
+        """
         obj = json.loads(data)
         stations = []
 
@@ -960,9 +920,7 @@ class NSAPI:
         return stations
 
     def get_stations(self):
-        """
-        Fetch the list of stations
-        """
+        """Fetch the list of stations."""
         url = '/reisinformatie-api/api/v2/stations?%s' % params
         raw_stations = self._request('GET', url)
         return self.parse_stations(raw_stations)
