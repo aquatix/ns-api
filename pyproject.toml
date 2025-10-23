@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nsapi"
-version = "3.1.2"
+version = "3.1.3"
 authors = [
     {name = "Michiel Scholten", email = "michiel@diginaut.net"},
 ]
@@ -55,7 +55,7 @@ select = [
 ]
 
 [tool.ruff.lint.isort]
-section-order = ["future", "standard-library","third-party", "first-party", "testing", "local-folder"]
+section-order = ["standard-library","third-party", "first-party", "testing", "local-folder"]
 
 [tool.ruff.lint.isort.sections]
 testing = ["tests"]

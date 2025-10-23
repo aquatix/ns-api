@@ -1,7 +1,7 @@
 -r requirements.in
 
 # Handy Python shell
-bpython
+ipython
 
 # Publishing on PyPI
 build
