@@ -159,11 +159,13 @@ def list_merge(list_a, list_b):
     return result
 
 # Enum helpers
-def parse_enum(enum_class: Type[Enum], value: str|None) -> Enum | str| None:
+def parse_enum(enum_class: Type[Enum], value) -> Enum | str | None:
     """Parse value to enum, or return raw value if unknown."""
+    if value is None or isinstance(value, enum_class):
+        return value
     try:
-        return enum_class(value) if value is not None else None
-    except ValueError:
+        return enum_class(value)
+    except (ValueError, TypeError):
         return value
 
 # Exceptions
@@ -511,11 +513,7 @@ class TripSubpart(BaseObject):
     def __setstate__(self, source_dict):
         super(TripSubpart, self).__setstate__(source_dict)
         # Restore enum if persisted as string
-        if isinstance(self.crowd_forecast, str):
-            try:
-                self.crowd_forecast = CrowdForecast(self.crowd_forecast)
-            except ValueError:
-                pass
+        self.crowd_forecast = parse_enum(CrowdForecast, self.crowd_forecast)
         trip_stops = []
         for raw_stop in self.stops:
             trip_stop = TripStop()
@@ -668,16 +666,8 @@ class Trip(BaseObject):
         super(Trip, self).__setstate__(source_dict)
 
         # Restore enums if persisted as strings
-        if isinstance(self.status, str):
-            try:
-                self.status = TripStatus(self.status)
-            except ValueError:
-                pass
-        if isinstance(self.crowd_forecast, str):
-            try:
-                self.crowd_forecast = CrowdForecast(self.crowd_forecast)
-            except ValueError:
-                pass
+        self.status = parse_enum(TripStatus, self.status)
+        self.crowd_forecast = parse_enum(CrowdForecast, self.crowd_forecast)
 
         # TripSubpart deserialisation
         trip_parts = []
