@@ -4,10 +4,10 @@ import collections
 import http.client
 import json
 import time
-import urllib.error
 import urllib.parse
-import urllib.request
 from datetime import datetime, timedelta
+from enum import Enum
+from typing import Type
 
 import pytz
 from pytz.tzinfo import StaticTzInfo
@@ -142,10 +142,10 @@ def list_merge(list_a, list_b):
     """Merge two lists without duplicating items.
 
     Args:
-      list_a: list
-      list_b: list
+        list_a: list
+        list_b: list
     Returns:
-      New list with deduplicated items from list_a and list_b
+        New list with deduplicated items from list_a and list_b
 
     """
     # return list(collections.OrderedDict.fromkeys(list_a + list_b))
@@ -158,6 +158,13 @@ def list_merge(list_a, list_b):
             result.append(item)
     return result
 
+# Enum helpers
+def parse_enum(enum_class: Type[Enum], value: str|None) -> Enum | str| None:
+    """Parse value to enum, or return raw value if unknown."""
+    try:
+        return enum_class(value) if value is not None else None
+    except ValueError:
+        return value
 
 # Exceptions
 
@@ -169,6 +176,36 @@ class RequestParametersError(Exception):
 
 
 # NS API objects
+class TripStatus(Enum):
+    """Trip status enumeration."""
+
+    CANCELLED = 'CANCELLED'
+    CHANGE_NOT_POSSIBLE = 'CHANGE_NOT_POSSIBLE'
+    ALTERNATIVE_TRANSPORT = 'ALTERNATIVE_TRANSPORT'
+    DISRUPTION = 'DISRUPTION'
+    MAINTENANCE = 'MAINTENANCE'
+    UNCERTAIN = 'UNCERTAIN'
+    REPLACEMENT = 'REPLACEMENT'
+    ADDITIONAL = 'ADDITIONAL'
+    SPECIAL = 'SPECIAL'
+    NORMAL = 'NORMAL'
+
+    def __str__(self):
+        """Return the string value for JSON serialization."""
+        return self.value
+
+class CrowdForecast(Enum):
+    """Crowd forecast enumeration."""
+
+    UNKNOWN = 'UNKNOWN'
+    LOW = 'LOW'
+    MEDIUM = 'MEDIUM'
+    HIGH = 'HIGH'
+
+    def __str__(self):
+        """Return the string value for JSON serialization."""
+        return self.value
+
 class BaseObject:
     """Base object with useful functions."""
 
@@ -411,12 +448,14 @@ class TripSubpart(BaseObject):
             self.transport_type = '-'
             self.journey_id = 0
 
-        # VOLGENS-PLAN, GEANNULEERD (=vervallen trein), GEWIJZIGD (=planaanpassing in de bijsturing op de dag zelf),
-        # OVERSTAP-NIET-MOGELIJK, VERTRAAGD, NIEUW (=extra trein)
         self.going = True
         self.has_delay = False
         if part_dict['cancelled']:
             self.going = False
+
+        # Map crowd forecast string to enum; keep unknown strings as-is for forward compatibility
+        self.crowd_forecast = parse_enum(CrowdForecast, part_dict.get('crowdForecast'))
+
 
         self.stops = []
         raw_stops = part_dict['stops']
@@ -471,6 +510,12 @@ class TripSubpart(BaseObject):
 
     def __setstate__(self, source_dict):
         super(TripSubpart, self).__setstate__(source_dict)
+        # Restore enum if persisted as string
+        if isinstance(self.crowd_forecast, str):
+            try:
+                self.crowd_forecast = CrowdForecast(self.crowd_forecast)
+            except ValueError:
+                pass
         trip_stops = []
         for raw_stop in self.stops:
             trip_stop = TripStop()
@@ -491,11 +536,7 @@ class Trip(BaseObject):
         if trip_dict is None:
             return
         # self.key = ??
-        try:
-            # VOLGENS-PLAN, GEWIJZIGD, VERTRAAGD, NIEUW, NIET-OPTIMAAL, NIET-MOGELIJK, PLAN-GEWIJZIGD
-            self.status = trip_dict['status']
-        except KeyError:
-            self.status = None
+        self.status = parse_enum(TripStatus, trip_dict.get('status'))
 
         self.nr_transfers = trip_dict['transfers']
         try:
@@ -506,7 +547,7 @@ class Trip(BaseObject):
             self.travel_time_planned = None
             self.going = False
         # TODO: CHECK STATUS of actual canceled stuff
-        if self.status == 'CANCELLED':
+        if self.status == TripStatus.CANCELLED:
             # Train has been cancelled
             self.going = False
         self.travel_time_actual = trip_dict['actualDurationInMinutes']
@@ -514,6 +555,9 @@ class Trip(BaseObject):
         dt_format = '%Y-%m-%dT%H:%M:%S%z'
 
         self.requested_time = trip_datetime
+
+        # Map crowd forecast string to enum; keep unknown strings as-is for forward compatibility
+        self.crowd_forecast = parse_enum(CrowdForecast, trip_dict.get('crowdForecast'))
 
         try:
             self.departure_time_planned = load_datetime(trip_dict['legs'][0]['origin']['plannedDateTime'], dt_format)
@@ -597,7 +641,7 @@ class Trip(BaseObject):
         return delay
 
     def has_delay(self, arrival_check=True):
-        if self.status != 'NORMAL':
+        if self.status != TripStatus.NORMAL:
             return True
         if self.requested_time != self.departure_time_actual:
             return True
@@ -622,6 +666,18 @@ class Trip(BaseObject):
 
     def __setstate__(self, source_dict):
         super(Trip, self).__setstate__(source_dict)
+
+        # Restore enums if persisted as strings
+        if isinstance(self.status, str):
+            try:
+                self.status = TripStatus(self.status)
+            except ValueError:
+                pass
+        if isinstance(self.crowd_forecast, str):
+            try:
+                self.crowd_forecast = CrowdForecast(self.crowd_forecast)
+            except ValueError:
+                pass
 
         # TripSubpart deserialisation
         trip_parts = []
