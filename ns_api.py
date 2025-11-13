@@ -121,6 +121,9 @@ def list_from_json(source_list_json):
     if source_list_json == [] or source_list_json is None:
         return result
     for list_item in source_list_json:
+        if not list_item:
+            print('Item is None, skipping deserialisation')
+            continue
         item = json.loads(list_item)
         match item.get('class_name', None):
             case 'Departure':
@@ -205,6 +208,12 @@ def parse_enum(enum_class: Type[Enum], value) -> Enum | str | None:
 
 class RequestParametersError(Exception):
     """Exception raised when the request parameters were not accepted."""
+
+    pass
+
+
+class RequestFailedError(Exception):
+    """Exception raised when no valid response was returned from the API."""
 
     pass
 
@@ -866,6 +875,8 @@ class NSAPI:
 
         :param str data: raw json result from the NS API
         """
+        if not data:
+            raise RequestFailedError('No disruptions were returned')
         obj = json.loads(data)
         disruptions = {'unplanned': [], 'planned': []}
         if obj['payload']:
@@ -911,6 +922,8 @@ class NSAPI:
 
         :param str data: raw json result from the NS API
         """
+        if not data:
+            raise RequestFailedError('No departures were returned')
         obj = json.loads(data)
         departures = []
 
@@ -955,6 +968,8 @@ class NSAPI:
     @staticmethod
     def parse_trips(data, requested_time):
         """Parse the NS API xml result into Trip objects."""
+        if not data:
+            raise RequestFailedError('No trips were returned')
         obj = json.loads(data)
         trips = []
 
@@ -1072,6 +1087,8 @@ class NSAPI:
         :return: list of the stations
         :rtype: list
         """
+        if not data:
+            raise RequestFailedError('No stations were returned')
         obj = json.loads(data)
         stations = []
 
