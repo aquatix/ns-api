@@ -5,7 +5,7 @@ nsapi
 Query the Dutch railways about your routes, getting info on delays and
 more. See below for the syntax and example output.
 
-|PyPI version| |PyPI downloads| |PyPI license| |Code health| |Git version|
+|PyPI version| |PyPI downloads| |PyPI license| |Git version|
 
 Installation
 ------------
@@ -84,9 +84,6 @@ The API portal also `provides statistics on usage and errors <https://apiportal.
    :target: https://pypi.python.org/pypi/nsapi/
 .. |PyPI license| image:: https://img.shields.io/github/license/aquatix/ns-api.svg
    :target: https://pypi.python.org/pypi/nsapi/
-.. |Code health| image:: https://api.codacy.com/project/badge/Grade/84e8b4b9005b455c8977bb1d8dda2b64
-   :target: https://www.codacy.com/manual/aquatix/ns-api?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=aquatix/ns-api&amp;utm_campaign=Badge_Grade
-   :alt: Code Health
 .. |Git version| image:: https://img.shields.io/github/commits-since/aquatix/ns-api/latest
    :target: https://github.com/aquatix/ns-api
    :alt: GitHub commits since latest release
