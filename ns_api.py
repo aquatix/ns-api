@@ -744,20 +744,18 @@ class NSAPI:
         @param data: raw json result from the NS API
         """
         obj = json.loads(data)
-        disruptions = {}
-        disruptions['unplanned'] = []
-        disruptions['planned'] = []
+        disruptions = {'unplanned': [], 'planned': []}
         if obj['payload']:
             raw_disruptions = obj['payload']
             if isinstance(raw_disruptions, collections.OrderedDict):
                 raw_disruptions = [raw_disruptions]
             for disruption in raw_disruptions:
                 if disruption['type'] == 'storing' or disruption['type'] == 'verstoring':
-                    newdis = Disruption(disruption)
-                    disruptions['unplanned'].append(newdis)
+                    new_disruption = Disruption(disruption)
+                    disruptions['unplanned'].append(new_disruption)
                 elif disruption['type'] == 'werkzaamheid':
-                    newdis = Disruption(disruption)
-                    disruptions['planned'].append(newdis)
+                    new_disruption = Disruption(disruption)
+                    disruptions['planned'].append(new_disruption)
         return disruptions
 
     def get_disruptions(self, station=None, actual=True, unplanned=True):
@@ -874,22 +872,22 @@ class NSAPI:
         @param prev_advices:    number of previous advices
         @param next_advices:    number of next advices
         """
-        timezonestring = '+0100'
+        timezone_string = '+0100'
         if is_dst('Europe/Amsterdam'):
-            timezonestring = '+0200'
+            timezone_string = '+0200'
 
         if len(timestamp) == 5:
             # Format of HH:MM - api needs yyyy-mm-ddThh:mm
             timestamp = time.strftime('%Y-%m-%d') + 'T' + timestamp
             # requested_time = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M")
             # TODO: DST/normal time
-            requested_time = load_datetime(timestamp + timezonestring, '%Y-%m-%dT%H:%M%z')
+            requested_time = load_datetime(timestamp + timezone_string, '%Y-%m-%dT%H:%M%z')
         else:
             # requested_time = datetime.strptime(timestamp, "%d-%m-%Y %H:%M")
-            requested_time = load_datetime(timestamp + timezonestring, '%d-%m-%Y %H:%M%z')
+            requested_time = load_datetime(timestamp + timezone_string, '%d-%m-%Y %H:%M%z')
             timestamp = datetime.strptime(timestamp, '%d-%m-%Y %H:%M').strftime('%Y-%m-%dT%H:%M')
 
-        params = urllib.parse.urlencode(
+        requests_params = urllib.parse.urlencode(
             {
                 # all possible Request parameters
                 # 'originLat': '{string}',
@@ -940,7 +938,7 @@ class NSAPI:
             }
         )
 
-        url = '/reisinformatie-api/api/v3/trips?%s' % params
+        url = '/reisinformatie-api/api/v3/trips?%s' % requests_params
         raw_trips = self._request('GET', url)
         return self.parse_trips(raw_trips, requested_time)
 
@@ -959,8 +957,8 @@ class NSAPI:
             raise RequestParametersError('The request could not be handled by the API')
 
         for station in obj['payload']:
-            newstat = Station(station)
-            stations.append(newstat)
+            new_station = Station(station)
+            stations.append(new_station)
 
         return stations
 
