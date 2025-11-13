@@ -8,7 +8,7 @@ version = "3.2.0"
 authors = [
     {name = "Michiel Scholten", email = "michiel@diginaut.net"},
 ]
-description="api wrapper for Dutch Railways (NS)"
+description="NS api wrapper for Dutch Railways (Nationale Spoorwegen, NS), also called ns-api"
 readme = "README.rst"
 requires-python = ">=3.10"
 keywords = ["api", "automation", "public transport"]
