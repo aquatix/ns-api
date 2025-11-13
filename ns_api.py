@@ -13,7 +13,7 @@ import pytz
 from pytz.tzinfo import StaticTzInfo
 
 # ns-api library version
-__version__ = '3.1.3'
+__version__ = '3.2.0'
 
 
 ####################
@@ -122,29 +122,27 @@ def list_from_json(source_list_json):
         return result
     for list_item in source_list_json:
         item = json.loads(list_item)
-        try:
-            if item['class_name'] == 'Departure':
-                temp = Departure()
-            elif item['class_name'] == 'Disruption':
-                temp = Disruption()
-            elif item['class_name'] == 'Station':
-                temp = Station()
-            elif item['class_name'] == 'Trip':
-                temp = Trip()
-            elif item['class_name'] == 'TripRemark':
-                temp = TripRemark()
-            elif item['class_name'] == 'TripStop':
-                temp = TripStop()
-            elif item['class_name'] == 'TripSubpart':
-                temp = TripSubpart()
-            else:
+        match item.get('class_name', None):
+            case 'Departure':
+                temp_object = Departure()
+            case 'Disruption':
+                temp_object = Disruption()
+            case 'Station':
+                temp_object = Station()
+            case 'Trip':
+                temp_object = Trip()
+            case 'TripRemark':
+                temp_object = TripRemark()
+            case 'TripStop':
+                temp_object = TripStop()
+            case 'TripSubpart':
+                temp_object = TripSubpart()
+            case _:
                 print('Unrecognised Class {}, skipping'.format(item['class_name']))
                 continue
-            temp.from_json(list_item)
-            result.append(temp)
-        except KeyError:
-            print('Unrecognised item with no class_name, skipping')
-            continue
+        # Now parse the JSON to the actual object
+        temp_object.from_json(list_item)
+        result.append(temp_object)
     return result
 
 
