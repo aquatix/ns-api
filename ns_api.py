@@ -767,19 +767,19 @@ class NSAPI:
         @param actual: only actual disruption
         @param unplanned: only unplanned disruption
         """
+        requests_params = urllib.parse.urlencode(
+            {
+                # Request parameters
+                'actual': actual,
+                'lang': 'nl',
+            }
+        )
         if station is None:
-            params = urllib.parse.urlencode(
-                {
-                    # Request parameters
-                    'actual': actual,
-                    'lang': 'nl',
-                }
-            )
-            url = '/reisinformatie-api/api/v2/disruptions?%s' % params
+            url = '/reisinformatie-api/api/v2/disruptions?%s' % requests_params
         else:
             url = '/reisinformatie-api/api/v2/disruptions/station/%s?%s' % (
                 station,
-                params,
+                requests_params,
             )
         raw_disruptions = self._request('GET', url)
         return self.parse_disruptions(raw_disruptions)
