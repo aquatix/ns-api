@@ -458,7 +458,6 @@ class TripSubpart(BaseObject):
         # Map crowd forecast string to enum; keep unknown strings as-is for forward compatibility
         self.crowd_forecast = parse_enum(CrowdForecast, part_dict.get('crowdForecast'))
 
-
         self.stops = []
         raw_stops = part_dict['stops']
         for raw_stop in raw_stops:
