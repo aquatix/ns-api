@@ -300,7 +300,7 @@ class Station(BaseObject):
         self.eva_code = stat_dict['EVACode']
         self.code = stat_dict['code']
         self.uic_code = stat_dict['UICCode']
-        self.stationtype = stat_dict['stationType']
+        self.station_type = stat_dict['stationType']
         self.names = {
             'short': stat_dict['namen']['kort'],
             'middle': stat_dict['namen']['middel'],
@@ -841,6 +841,13 @@ class NSAPI:
         self.subscription_key = subscription_key
 
     def _request(self, method, url, postdata=None, params=None):
+        """Make a request to the NS API.
+
+        :param str method: HTTP method ('GET' or 'POST')
+        :param str url: exact URL of the API endpoint
+        :param dict postdata: POST data
+        :param dict params: URL parameters
+        """
         headers = {
             # Request headers
             'Ocp-Apim-Subscription-Key': self.subscription_key,
@@ -883,7 +890,7 @@ class NSAPI:
         :param bool actual: only actual disruptions
         :param bool unplanned: only unplanned disruptions
         """
-        requests_params = urllib.parse.urlencode(
+        params = urllib.parse.urlencode(
             {
                 # Request parameters
                 'actual': actual,
@@ -891,11 +898,11 @@ class NSAPI:
             }
         )
         if station is None:
-            url = '/reisinformatie-api/api/v2/disruptions?%s' % requests_params
+            url = '/reisinformatie-api/api/v2/disruptions?%s' % params
         else:
             url = '/reisinformatie-api/api/v2/disruptions/station/%s?%s' % (
                 station,
-                requests_params,
+                params,
             )
         raw_disruptions = self._request('GET', url)
         return self.parse_disruptions(raw_disruptions)
@@ -910,9 +917,8 @@ class NSAPI:
         departures = []
 
         for departure in obj['payload']['departures']:
-            newdep = Departure(departure)
-            departures.append(newdep)
-            print((newdep.delay))
+            new_departure = Departure(departure)
+            departures.append(new_departure)
 
         return departures
 
@@ -960,8 +966,8 @@ class NSAPI:
 
         try:
             for trip in obj['trips']:
-                newtrip = Trip(trip, requested_time)
-                trips.append(newtrip)
+                new_trip = Trip(trip, requested_time)
+                trips.append(new_trip)
         except TypeError:
             # If no options are found, obj['ReisMogelijkheden'] is None
             return None
@@ -1005,7 +1011,7 @@ class NSAPI:
             requested_time = load_datetime(timestamp + timezone_string, '%d-%m-%Y %H:%M%z')
             timestamp = datetime.strptime(timestamp, '%d-%m-%Y %H:%M').strftime('%Y-%m-%dT%H:%M')
 
-        requests_params = urllib.parse.urlencode(
+        params = urllib.parse.urlencode(
             {
                 # all possible Request parameters
                 # 'originLat': '{string}',
@@ -1056,7 +1062,7 @@ class NSAPI:
             }
         )
 
-        url = '/reisinformatie-api/api/v3/trips?%s' % requests_params
+        url = '/reisinformatie-api/api/v3/trips?%s' % params
         raw_trips = self._request('GET', url)
         return self.parse_trips(raw_trips, requested_time)
 
