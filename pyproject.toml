@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nsapi"
-version = "3.2.0"
+version = "3.2.1"
 authors = [
     {name = "Michiel Scholten", email = "michiel@diginaut.net"},
 ]
