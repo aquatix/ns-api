@@ -212,7 +212,7 @@ class RequestParametersError(Exception):
     pass
 
 
-class RequestFailedError(Exception):
+class NoDataReceivedError(Exception):
     """Exception raised when no valid response was returned from the API."""
 
     pass
@@ -876,7 +876,7 @@ class NSAPI:
         :param str data: raw json result from the NS API
         """
         if not data:
-            raise RequestFailedError('No disruptions were returned')
+            raise NoDataReceivedError('No disruptions were returned')
         obj = json.loads(data)
         disruptions = {'unplanned': [], 'planned': []}
         if obj['payload']:
@@ -923,7 +923,7 @@ class NSAPI:
         :param str data: raw json result from the NS API
         """
         if not data:
-            raise RequestFailedError('No departures were returned')
+            raise NoDataReceivedError('No departures were returned')
         obj = json.loads(data)
         departures = []
 
@@ -969,7 +969,7 @@ class NSAPI:
     def parse_trips(data, requested_time):
         """Parse the NS API xml result into Trip objects."""
         if not data:
-            raise RequestFailedError('No trips were returned')
+            raise NoDataReceivedError('No trips were returned')
         obj = json.loads(data)
         trips = []
 
@@ -1088,7 +1088,7 @@ class NSAPI:
         :rtype: list
         """
         if not data:
-            raise RequestFailedError('No stations were returned')
+            raise NoDataReceivedError('No stations were returned')
         obj = json.loads(data)
         stations = []
 

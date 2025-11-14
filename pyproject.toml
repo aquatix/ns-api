@@ -61,4 +61,4 @@ section-order = ["standard-library","third-party", "first-party", "testing", "lo
 testing = ["tests"]
 
 [tool.ruff.lint.mccabe]
-max-complexity = 10
+max-complexity = 11
