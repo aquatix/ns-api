@@ -746,6 +746,8 @@ class Trip(BaseObject):
             return True
         if self.requested_time != self.departure_time_actual:
             return True
+        if arrival_check and self.arrival_time_actual != self.arrival_time_planned:
+            return True
         return False
 
     def __getstate__(self):
