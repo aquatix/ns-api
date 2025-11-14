@@ -121,6 +121,9 @@ def list_from_json(source_list_json):
     if source_list_json == [] or source_list_json is None:
         return result
     for list_item in source_list_json:
+        if not list_item:
+            print('Item is None, skipping deserialisation')
+            continue
         item = json.loads(list_item)
         match item.get('class_name', None):
             case 'Departure':
@@ -205,6 +208,12 @@ def parse_enum(enum_class: Type[Enum], value) -> Enum | str | None:
 
 class RequestParametersError(Exception):
     """Exception raised when the request parameters were not accepted."""
+
+    pass
+
+
+class NoDataReceivedError(Exception):
+    """Exception raised when no valid response was returned from the API."""
 
     pass
 
@@ -867,7 +876,11 @@ class NSAPI:
         """Parse the NS API json result into Disruption objects.
 
         :param str data: raw json result from the NS API
+        :raises:
+            - NoDataReceivedError when the NS API did not return data
         """
+        if not data:
+            raise NoDataReceivedError('No disruptions were returned')
         obj = json.loads(data)
         disruptions = {'unplanned': [], 'planned': []}
         if obj['payload']:
@@ -912,7 +925,11 @@ class NSAPI:
         """Parse the NS API json result into Departure objects.
 
         :param str data: raw json result from the NS API
+        :raises:
+            - NoDataReceivedError when the NS API did not return data
         """
+        if not data:
+            raise NoDataReceivedError('No departures were returned')
         obj = json.loads(data)
         departures = []
 
@@ -956,7 +973,17 @@ class NSAPI:
 
     @staticmethod
     def parse_trips(data, requested_time):
-        """Parse the NS API xml result into Trip objects."""
+        """Parse the NS API json result into Trip objects.
+
+        :param str data: 'raw' response from API
+        :param datetime requested_time: Timestamp to look up the possibilities for
+        :return: list of the available trips
+        :rtype: list
+        :raises:
+            - NoDataReceivedError when the NS API did not return data
+        """
+        if not data:
+            raise NoDataReceivedError('No trips were returned')
         obj = json.loads(data)
         trips = []
 
@@ -1073,7 +1100,11 @@ class NSAPI:
         :param str data: 'raw' response from API
         :return: list of the stations
         :rtype: list
+        :raises:
+            - NoDataReceivedError when the NS API did not return data
         """
+        if not data:
+            raise NoDataReceivedError('No stations were returned')
         obj = json.loads(data)
         stations = []
 
