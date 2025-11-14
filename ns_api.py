@@ -627,7 +627,7 @@ class Trip(BaseObject):
             'requested_differs': None,
             'parts': [],
         }
-        if self.departure_time_actual and self.departure_time_actual > self.departure_time_planned:
+        if self.departure_time_actual and self.departure_time_planned and self.departure_time_actual > self.departure_time_planned:
             delay['departure_delay'] = self.departure_time_actual - self.departure_time_planned
             delay['departure_time'] = self.departure_time_actual
         if self.requested_time != self.departure_time_actual:
@@ -966,6 +966,10 @@ class NSAPI:
 
     def get_stations(self):
         """Fetch the list of stations."""
+        params = urllib.parse.urlencode(
+            {
+            }
+        )
         url = '/reisinformatie-api/api/v2/stations?%s' % params
         raw_stations = self._request('GET', url)
         return self.parse_stations(raw_stations)
