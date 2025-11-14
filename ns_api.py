@@ -734,7 +734,11 @@ class Trip(BaseObject):
             'requested_differs': None,
             'parts': [],
         }
-        if self.departure_time_actual and self.departure_time_planned and self.departure_time_actual > self.departure_time_planned:
+        if (
+            self.departure_time_actual
+            and self.departure_time_planned
+            and self.departure_time_actual > self.departure_time_planned
+        ):
             delay['departure_delay'] = self.departure_time_actual - self.departure_time_planned
             delay['departure_time'] = self.departure_time_actual
         if self.requested_time != self.departure_time_actual:
