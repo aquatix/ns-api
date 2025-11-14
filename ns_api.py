@@ -967,7 +967,7 @@ class NSAPI:
 
     @staticmethod
     def parse_trips(data, requested_time):
-        """Parse the NS API xml result into Trip objects."""
+        """Parse the NS API json result into Trip objects."""
         if not data:
             raise NoDataReceivedError('No trips were returned')
         obj = json.loads(data)
