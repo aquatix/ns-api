@@ -874,6 +874,8 @@ class NSAPI:
         """Parse the NS API json result into Disruption objects.
 
         :param str data: raw json result from the NS API
+        :raises:
+            - NoDataReceivedError when the NS API did not return data
         """
         if not data:
             raise NoDataReceivedError('No disruptions were returned')
@@ -921,6 +923,8 @@ class NSAPI:
         """Parse the NS API json result into Departure objects.
 
         :param str data: raw json result from the NS API
+        :raises:
+            - NoDataReceivedError when the NS API did not return data
         """
         if not data:
             raise NoDataReceivedError('No departures were returned')
@@ -967,7 +971,15 @@ class NSAPI:
 
     @staticmethod
     def parse_trips(data, requested_time):
-        """Parse the NS API json result into Trip objects."""
+        """Parse the NS API json result into Trip objects.
+
+        :param str data: 'raw' response from API
+        :param datetime requested_time: Timestamp to look up the possibilities for
+        :return: list of the available trips
+        :rtype: list
+        :raises:
+            - NoDataReceivedError when the NS API did not return data
+        """
         if not data:
             raise NoDataReceivedError('No trips were returned')
         obj = json.loads(data)
@@ -1086,6 +1098,8 @@ class NSAPI:
         :param str data: 'raw' response from API
         :return: list of the stations
         :rtype: list
+        :raises:
+            - NoDataReceivedError when the NS API did not return data
         """
         if not data:
             raise NoDataReceivedError('No stations were returned')
