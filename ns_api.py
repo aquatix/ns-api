@@ -98,7 +98,7 @@ def load_datetime(value, dt_format):
 
 
 def list_to_json(source_list):
-    """Serialise all the items in source_list to json.
+    """Serialise all the items in source_list to JSON.
 
     :param list source_list: List of items to serialise
     :return: Serialised list of items
@@ -111,7 +111,7 @@ def list_to_json(source_list):
 
 
 def list_from_json(source_list_json):
-    """Deserialise all the items in source_list from json.
+    """Deserialise all the items in source_list from JSON.
 
     :param list source_list_json: List of items to deserialise
     :return: Deserialised list of items
@@ -877,9 +877,9 @@ class NSAPI:
 
     @staticmethod
     def parse_disruptions(data):
-        """Parse the NS API json result into Disruption objects.
+        """Parse the NS API JSON result into Disruption objects.
 
-        :param str data: raw json result from the NS API
+        :param str data: raw JSON result from the NS API
         :raises:
             - NoDataReceivedError when the NS API did not return data
         """
@@ -926,9 +926,9 @@ class NSAPI:
 
     @staticmethod
     def parse_departures(data):
-        """Parse the NS API json result into Departure objects.
+        """Parse the NS API JSON result into Departure objects.
 
-        :param str data: raw json result from the NS API
+        :param str data: raw JSON result from the NS API
         :raises:
             - NoDataReceivedError when the NS API did not return data
         """
@@ -977,7 +977,7 @@ class NSAPI:
 
     @staticmethod
     def parse_trips(data, requested_time):
-        """Parse the NS API json result into Trip objects.
+        """Parse the NS API JSON result into Trip objects.
 
         :param str data: 'raw' response from API
         :param datetime requested_time: Timestamp to look up the possibilities for
