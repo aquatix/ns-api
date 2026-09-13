@@ -69,13 +69,13 @@ NS API key
 ~~~~~~~~~~
 
 To actually be able to query the `Nederlandse Spoorwegen
-API <https://apiportal.ns.nl/>`_, you `need to subscribe
-<https://apiportal.ns.nl/products/NsApp>`_. This immediately
+API <https://apiportal.ns.nl/product#product=NsApp>`_, you `need to subscribe
+<https://apiportal.ns.nl/signin>`_. This immediately
 gives you a primary and secundary key you need for access.
 
-The library uses the `reisinformatie API <https://apiportal.ns.nl/docs/services/reisinformatie-api/>`_. Here you can try the API for yourself (and look up station names, but the library has the get_stations() function for this too).
+The library uses the `reisinformatie API <https://apiportal.ns.nl/api-details#api=reisinformatie-api>`_. Here you can try the API for yourself (and look up station names, but the library has the get_stations() function for this too).
 
-The API portal also `provides statistics on usage and errors <https://apiportal.ns.nl/Developer/Analytics>`_.
+The API portal also `provides statistics on usage and errors <https://apiportal.ns.nl/reports>`_.
 
 
 .. |PyPI version| image:: https://img.shields.io/pypi/v/nsapi.svg
