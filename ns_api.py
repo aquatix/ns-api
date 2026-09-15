@@ -5,15 +5,15 @@ import http.client
 import json
 import time
 import urllib.parse
+import zoneinfo
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Type
 
 import pytz
-from pytz.tzinfo import StaticTzInfo
 
 # ns-api library version
-__version__ = '3.2.1'
+__version__ = '3.2.2'
 
 
 ####################
@@ -59,12 +59,12 @@ def is_dst(zone_name):
     :return: True when DST, False otherwise
     :rtype: bool
     """
-    tz = pytz.timezone(zone_name)
-    now = pytz.utc.localize(datetime.utcnow())
-    return now.astimezone(tz).dst() != timedelta(0)
+    location_tz = zoneinfo.ZoneInfo(zone_name)
+    location_now = datetime.now(location_tz)
+    return bool(location_now.dst())
 
 
-class OffsetTime(StaticTzInfo):
+class OffsetTime(pytz.tzinfo.StaticTzInfo):
     """A dumb timezone based on offset such as +0530, -0600, etc."""
 
     def __init__(self, offset):
