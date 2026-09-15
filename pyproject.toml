@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nsapi"
-version = "3.2.1"
+version = "3.2.2"
 authors = [
     {name = "Michiel Scholten", email = "michiel@diginaut.net"},
 ]
@@ -62,3 +62,12 @@ testing = ["tests"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 11
+
+[dependency-groups]
+dev = [
+    "build>=1.6.0",
+    "ipython>=8.39.0",
+    "pyrefly>=1.2.0",
+    "ruff>=0.16.5",
+    "twine>=7.0.0",
+]
