@@ -654,33 +654,33 @@ class Trip(BaseObject):
             self.going = False
         self.travel_time_actual = trip_dict['actualDurationInMinutes']
 
-        dt_format = '%Y-%m-%dT%H:%M:%S%z'
-
         self.requested_time = trip_datetime
 
         # Map crowd forecast string to enum; keep unknown strings as-is for forward compatibility
         self.crowd_forecast = parse_enum(CrowdForecast, trip_dict.get('crowdForecast'))
 
         try:
-            self.departure_time_planned = load_datetime(trip_dict['legs'][0]['origin']['plannedDateTime'], dt_format)
+            self.departure_time_planned = load_datetime(trip_dict['legs'][0]['origin']['plannedDateTime'], NS_DATETIME)
         except KeyError:
             self.departure_time_planned = None
 
         try:
-            self.departure_time_actual = load_datetime(trip_dict['legs'][0]['origin']['actualDateTime'], dt_format)
+            self.departure_time_actual = load_datetime(trip_dict['legs'][0]['origin']['actualDateTime'], NS_DATETIME)
         except KeyError:
             # Fall back to the planned time
             self.departure_time_actual = None
 
         try:
             self.arrival_time_planned = load_datetime(
-                trip_dict['legs'][-1]['destination']['plannedDateTime'], dt_format
+                trip_dict['legs'][-1]['destination']['plannedDateTime'], NS_DATETIME
             )
         except KeyError:
             self.arrival_time_planned = None
 
         try:
-            self.arrival_time_actual = load_datetime(trip_dict['legs'][-1]['destination']['actualDateTime'], dt_format)
+            self.arrival_time_actual = load_datetime(
+                trip_dict['legs'][-1]['destination']['actualDateTime'], NS_DATETIME
+            )
         except KeyError:
             # Fall back to the planned time
             self.arrival_time_actual = None
