@@ -25,9 +25,23 @@ dependencies = [
 ]
 # dynamic = ["version"]
 
+[dependency-groups]
+dev = [
+    "build>=1.6.0",
+    "ipython>=8.39.0",
+    "pyrefly>=1.2.0",
+    "ruff>=0.16.5",
+    "twine>=7.0.0",
+
 [project.urls]
 "Homepage" = "https://github.com/aquatix/ns-api/"
 "Bug Tracker" = "https://github.com/aquatix/ns-api/issues"
+
+[tool.pyrefly]
+project-includes = [
+    "**/*.py*",
+    "**/*.ipynb",
+]
 
 [tool.ruff]
 exclude = [
@@ -62,17 +76,3 @@ testing = ["tests"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 11
-
-[dependency-groups]
-dev = [
-    "build>=1.6.0",
-    "ipython>=8.39.0",
-    "pyrefly>=1.2.0",
-    "ruff>=0.16.5",
-    "twine>=7.0.0",
-
-[tool.pyrefly]
-project-includes = [
-    "**/*.py*",
-    "**/*.ipynb",
-]
