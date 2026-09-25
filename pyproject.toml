@@ -32,6 +32,7 @@ dev = [
     "pyrefly>=1.2.0",
     "ruff>=0.16.5",
     "twine>=7.0.0",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/aquatix/ns-api/"
